@@ -117,11 +117,11 @@
                     <tbody>
                         {% for siswa in daftar_siswa %}
                         <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ siswa.no_absen }}</td>
-                            <td>{{ siswa.nama_siswa }}</td>
+                            <td data-label="Nomor">{{ loop.index }}</td>
+                            <td data-label="Nomor Absen">{{ siswa.no_absen }}</td>
+                            <td data-label="Nama Siswa">{{ siswa.nama_siswa }}</td>
 
-                            <td>
+                            <td data-label="Keadaan">
                                 {% if siswa.status_aktif == 1 %}
                                     Aktif
                                 {% else %}
@@ -129,7 +129,7 @@
                                 {% endif %}
                             </td>
 
-                            <td>
+                            <td data-label="Aksi">
                                 {% if periode.status_terkunci == 0 %}
                                     <a href="{{ url_for('edit_siswa', id_siswa=siswa.id_siswa) }}"
                                        class="teks-pilih">
@@ -192,11 +192,11 @@
                     <tbody>
                         {% for siswa in siswa_arsip %}
                         <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ siswa.no_absen }}</td>
-                            <td>{{ siswa.nama_siswa }}</td>
-                            <td>Diarsipkan</td>
-                            <td>
+                            <td data-label="Nomor">{{ loop.index }}</td>
+                            <td data-label="Nomor Absen Sebelumnya">{{ siswa.no_absen }}</td>
+                            <td data-label="Nama Siswa">{{ siswa.nama_siswa }}</td>
+                            <td data-label="Keadaan">Diarsipkan</td>
+                            <td data-label="Aksi">
                                 <form method="POST"
                                     action="{{ url_for('pulihkan_siswa', id_siswa=siswa.id_siswa) }}">
                                     <button type="submit" class="btn-tambah">

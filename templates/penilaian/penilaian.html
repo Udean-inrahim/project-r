@@ -136,13 +136,13 @@
                         {% set hasil = hasil_nilai[id_roster] %}
 
                         <tr>
-                            <td>{{ siswa.no_absen }}</td>
-                            <td>{{ siswa.nama_siswa }}</td>
+                            <td data-label="Nomor Absen">{{ siswa.no_absen }}</td>
+                            <td data-label="Nama Siswa">{{ siswa.nama_siswa }}</td>
 
                             {% if pengaturan.metode_tugas == 'satu_per_satu' %}
 
                                 {% for tugas in daftar_tugas %}
-                                <td>
+                                <td data-label="{{ tugas.nama_tugas }}">
                                     <input
                                         type="number"
                                         name="tugas_{{ id_roster }}_{{ tugas.id_tugas }}"
@@ -157,7 +157,7 @@
                                 {% endfor %}
 
                             {% else %}
-                                <td>
+                                <td data-label="Rata-rata Tugas">
                                     <input
                                         type="number"
                                         name="rata_rata_{{ id_roster }}"
@@ -173,7 +173,7 @@
 
                             {% set komponen = nilai_komponen.get(id_roster) %}
 
-                            <td>
+                            <td data-label="UTS">
                                 <input
                                     type="number"
                                     name="uts_{{ id_roster }}"
@@ -186,7 +186,7 @@
                                 >
                             </td>
 
-                            <td>
+                            <td data-label="UAS">
                                 <input
                                     type="number"
                                     name="uas_{{ id_roster }}"
@@ -199,7 +199,7 @@
                                 >
                             </td>
 
-                            <td>
+                            <td data-label="Kehadiran">
                                 <input
                                     type="number"
                                     name="kehadiran_{{ id_roster }}"
@@ -212,7 +212,7 @@
                                 >
                             </td>
 
-                            <td>
+                            <td data-label="Nilai Akhir">
                                 {% if hasil.nilai_akhir is not none %}
                                     {{ "%.2f"|format(hasil.nilai_akhir) }}
                                 {% else %}
@@ -220,9 +220,9 @@
                                 {% endif %}
                             </td>
 
-                            <td>{{ hasil.grade if hasil.grade else "-" }}</td>
+                            <td data-label="Predikat">{{ hasil.grade if hasil.grade else "-" }}</td>
 
-                            <td>
+                            <td data-label="Status Ketuntasan">
                                 {{ hasil.status_kkm if hasil.status_kkm else "Belum dihitung" }}
                             </td>
                         </tr>

@@ -93,6 +93,12 @@ form button {
     transition: 0.2s;
 }
 
+.password-wrapper button.toggle-password {
+    width: 44px;
+    height: 44px;
+    padding: 12px;
+}
+
 form button:hover {
     background: #0e4f91;
 }
@@ -112,6 +118,24 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 
     .login-card h1 {
         font-size: 25px;
+    }
+
+    .password-wrapper .toggle-password {
+        right: 2px;
+        width: 44px;
+        height: 44px;
+        padding: 12px;
+    }
+
+    .login-card .password-wrapper input {
+        padding-right: 54px;
+    }
+
+    .login-card form + p a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 4px;
     }
 }
 .password-wrapper {
@@ -133,9 +157,9 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    width: 28px;
-    height: 28px;
-    padding: 4px;
+    width: 44px;
+    height: 44px;
+    padding: 12px;
     background: transparent;
     border: none;
     cursor: pointer;

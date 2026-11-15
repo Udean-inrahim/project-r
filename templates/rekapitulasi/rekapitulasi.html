@@ -105,10 +105,10 @@
                 <tbody>
                     {% for siswa in hasil_rekap %}
                     <tr>
-                        <td>{{ siswa.no_absen }}</td>
-                        <td>{{ siswa.nama_siswa }}</td>
+                        <td data-label="Nomor Absen">{{ siswa.no_absen }}</td>
+                        <td data-label="Nama Siswa">{{ siswa.nama_siswa }}</td>
 
-                        <td>
+                        <td data-label="Nilai Akhir">
                             {% if siswa.nilai_akhir is not none %}
                                 {{ "%.2f"|format(siswa.nilai_akhir) }}
                             {% else %}
@@ -116,9 +116,9 @@
                             {% endif %}
                         </td>
 
-                        <td>{{ siswa.grade or "-" }}</td>
+                        <td data-label="Predikat">{{ siswa.grade or "-" }}</td>
 
-                        <td>{{ siswa.status_kkm or "Belum dihitung" }}</td>
+                        <td data-label="Status Ketuntasan">{{ siswa.status_kkm or "Belum dihitung" }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

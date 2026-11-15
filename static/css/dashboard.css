@@ -288,6 +288,72 @@ button {
     min-height: 100vh;
 }
 
+/* Navigasi mobile: hanya tampil saat sidebar disembunyikan */
+.mobile-nav { display: none; }
+
+.mobile-nav-menu {
+    border: 1px solid #e4eaf3;
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+}
+
+.mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 16px;
+    color: var(--text-dark);
+    font-size: 14px;
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+}
+
+.mobile-nav-toggle::-webkit-details-marker { display: none; }
+
+.mobile-nav-toggle::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--text-muted);
+    border-bottom: 2px solid var(--text-muted);
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+}
+
+.mobile-nav-menu[open] .mobile-nav-toggle::after { transform: rotate(225deg); }
+
+.mobile-nav-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 6px;
+    border-top: 1px solid var(--border-subtle);
+    list-style: none;
+}
+
+.mobile-nav-list a,
+.mobile-nav-list button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f5f8fc;
+    color: var(--text-medium);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    text-decoration: none;
+}
+
+.mobile-nav-list a.active { background: var(--primary-blue); color: #ffffff; }
+.mobile-nav-list .mobile-nav-keluar { color: #b42318; background: #fdf2f1; }
+
 /* Topbar: Search & Date */
 .topbar {
     display: flex;
@@ -1358,6 +1424,7 @@ button:focus-visible,
     .sidebar {
         display: none;
     }
+    .mobile-nav { display: block; }
     .classes-cards-grid {
         grid-template-columns: 1fr;
     }
@@ -1369,6 +1436,12 @@ button:focus-visible,
     .dashboard-period-card > a { width: 100%; }
     .topbar { flex-wrap: wrap; }
     .search-box-container { width: 100%; max-width: 100%; }
+    .search-box { min-height: 46px; }
+    .search-input { min-height: 44px; }
+    .search-kbd-badge { display: none; }
+    .btn-pill-blue,
+    .dashboard-period-card > a { min-height: 44px; }
+    .section-link { display: inline-flex; align-items: center; min-height: 44px; }
     .today-date { font-size: 11px; }
 }
 

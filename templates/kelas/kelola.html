@@ -42,49 +42,53 @@
                         <strong>{{ kelas.jumlah_periode }}</strong>
                     </p>
 
-                    {% if kelas.id_kelas == id_kelas_aktif %}
+                    <div class="aksi-kartu">
 
-                        <span class="status-kelas aktif">
-                            Aktif
-                        </span>
+                        {% if kelas.id_kelas == id_kelas_aktif %}
 
-                    {% else %}
+                            <span class="status-kelas aktif">
+                                Aktif
+                            </span>
 
-                        <span class="status-kelas tidak-aktif">
-                            Tidak Aktif
-                        </span>
+                        {% else %}
 
-                        <a href="{{ url_for('pilih_kelas', id_kelas=kelas.id_kelas) }}"
-                        class="teks-pilih">
-                            Jadikan Aktif
-                        </a>
+                            <span class="status-kelas tidak-aktif">
+                                Tidak Aktif
+                            </span>
 
-                    {% endif %}
+                            <a href="{{ url_for('pilih_kelas', id_kelas=kelas.id_kelas) }}"
+                            class="teks-pilih">
+                                Jadikan Aktif
+                            </a>
+
+                        {% endif %}
 
                         <a href="{{ url_for('edit_kelas', id_kelas=kelas.id_kelas) }}"
                         class="teks-pilih">
                             Ubah Kelas
                         </a>
 
-                    <form method="POST"
-                          action="{{ url_for('arsip_kelas', id_kelas=kelas.id_kelas) }}"
-                          onsubmit="return confirm('Arsipkan kelas ini? Data kelas tetap tersimpan.');">
+                        <form method="POST"
+                              action="{{ url_for('arsip_kelas', id_kelas=kelas.id_kelas) }}"
+                              onsubmit="return confirm('Arsipkan kelas ini? Data kelas tetap tersimpan.');">
 
-                        <button type="submit" class="btn-batal">
-                            Arsip
-                        </button>
+                            <button type="submit" class="btn-batal">
+                                Arsip
+                            </button>
 
-                    </form>
+                        </form>
 
-                    <form method="POST"
-                        action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
-                        onsubmit="return confirm('PERINGATAN! Kelas {{ kelas.nama_kelas }} beserta seluruh periode akademik, data siswa dalam periode tersebut, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data yang dihapus tidak dapat dipulihkan. Apakah Anda yakin ingin melanjutkan?');">
+                        <form method="POST"
+                            action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
+                            onsubmit="return confirm('PERINGATAN! Kelas {{ kelas.nama_kelas }} beserta seluruh periode akademik, data siswa dalam periode tersebut, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data yang dihapus tidak dapat dipulihkan. Apakah Anda yakin ingin melanjutkan?');">
 
-                        <button type="submit" class="btn-batal">
-                            Hapus 
-                        </button>
+                            <button type="submit" class="btn-batal">
+                                Hapus
+                            </button>
 
-                    </form>
+                        </form>
+
+                    </div>
 
                 </article>
 
@@ -146,24 +150,28 @@
                         {% endif %}
                     </div>
 
-                    <form method="POST"
-                          action="{{ url_for('pulihkan_kelas', id_kelas=kelas.id_kelas) }}">
+                    <div class="aksi-kartu">
 
-                        <button type="submit" class="btn-tambah">
-                            Pulihkan 
-                        </button>
+                        <form method="POST"
+                              action="{{ url_for('pulihkan_kelas', id_kelas=kelas.id_kelas) }}">
 
-                    </form>
+                            <button type="submit" class="btn-tambah">
+                                Pulihkan
+                            </button>
 
-                    <form method="POST"
-                        action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
-                        onsubmit="return confirm('PERINGATAN! Kelas ini beserta seluruh periode akademik, siswa, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
+                        </form>
 
-                        <button type="submit" class="btn-batal">
-                            Hapus 
-                        </button>
+                        <form method="POST"
+                            action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
+                            onsubmit="return confirm('PERINGATAN! Kelas ini beserta seluruh periode akademik, siswa, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
 
-                    </form>
+                            <button type="submit" class="btn-batal">
+                                Hapus
+                            </button>
+
+                        </form>
+
+                    </div>
 
                 </article>
 

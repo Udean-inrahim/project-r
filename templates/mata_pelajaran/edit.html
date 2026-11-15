@@ -30,10 +30,9 @@
             </div>
         {% endif %}
 
-        <section class="kartu-penugasan">
+        <form method="POST" class="form-penugasan">
 
-            <form method="POST">
-
+            <div class="form-group">
                 <label for="nama_mata_pelajaran">
                     Nama Mata Pelajaran
                 </label>
@@ -46,21 +45,20 @@
                     placeholder="Masukkan nama mata pelajaran"
                     required
                 >
+            </div>
 
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="btn-tambah">
-                        Simpan
-                    </button>
+            <div class="form-actions">
+                <a href="{{ url_for('daftar_mata_pelajaran') }}"
+                   class="btn-batal">
+                    Batal
+                </a>
 
-                    <a href="{{ url_for('daftar_mata_pelajaran') }}"
-                       class="btn-batal">
-                        Batal
-                    </a>
-                </div>
+                <button type="submit" class="btn-simpan">
+                    Simpan
+                </button>
+            </div>
 
-            </form>
-
-        </section>
+        </form>
 
     </main>
 

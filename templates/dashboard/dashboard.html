@@ -149,6 +149,24 @@
          COLUMN 2: CENTER MAIN CONTENT AREA (EXPANDED)
          ============================================================ -->
     <main class="main-area">
+        <!-- Navigasi mobile: sidebar disembunyikan di layar kecil -->
+        <nav class="mobile-nav" aria-label="Navigasi utama">
+            <details class="mobile-nav-menu">
+                <summary class="mobile-nav-toggle">Menu</summary>
+                <ul class="mobile-nav-list">
+                    <li><a href="{{ url_for('dashboard') }}" class="active">Dasbor</a></li>
+                    <li><a href="{{ url_for('daftar_siswa') }}">Data Siswa</a></li>
+                    <li><a href="{{ url_for('pengaturan_bobot', sumber='dashboard') }}">Pengaturan Bobot</a></li>
+                    <li><a href="{{ url_for('halaman_penilaian') }}">Perhitungan Nilai</a></li>
+                    <li><a href="{{ url_for('rekapitulasi_nilai') }}">Rekapitulasi Nilai</a></li>
+                    <li><a href="{{ url_for('daftar_mata_pelajaran') }}">Kelola Mata Pelajaran</a></li>
+                    <li><a href="{{ url_for('halaman_pilih_mata_pelajaran') }}">Ganti Mata Pelajaran</a></li>
+                    <li><a href="{{ url_for('pengaturan_akun') }}">Pengaturan Akun</a></li>
+                    <li><button type="button" class="mobile-nav-keluar" onclick="tampilkanKonfirmasiKeluar()">Keluar Akun</button></li>
+                </ul>
+            </details>
+        </nav>
+
         <!-- Top Search Bar & Date -->
         <header class="topbar">
             <div class="search-box-container">

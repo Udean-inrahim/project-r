@@ -50,23 +50,25 @@
                     {% if item.status_arsip == 1 %}
                         <p><strong> status: Diarsipkan</strong></p>
 
-                        <form method="POST"
-                            action="{{ url_for('pulihkan_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
-                            onsubmit="return confirm('Pulihkan mata pelajaran ini?')">
+                        <div class="aksi-mapel">
+                            <form method="POST"
+                                action="{{ url_for('pulihkan_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
+                                onsubmit="return confirm('Pulihkan mata pelajaran ini?')">
 
-                            <button type="submit" class="btn-tambah">
-                                Pulihkan
-                            </button>
-                        </form>
+                                <button type="submit" class="btn-tambah">
+                                    Pulihkan
+                                </button>
+                            </form>
 
-                        <form method="POST"
-                            action="{{ url_for('hapus_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
-                            onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini secara permanen beserta kelas, periode, dan nilai terkait?')">
+                            <form method="POST"
+                                action="{{ url_for('hapus_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
+                                onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini secara permanen beserta kelas, periode, dan nilai terkait?')">
 
-                            <button type="submit" class="btn-batal">
-                                Hapus 
-                            </button>
-                        </form>
+                                <button type="submit" class="btn-batal">
+                                    Hapus
+                                </button>
+                            </form>
+                        </div>
 
                     {% else %}
                         {% if item.sedang_aktif == 1 %}
