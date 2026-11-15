@@ -1,4 +1,4 @@
-import sqlite3
+import os
 from datetime import date
 from functools import wraps
 
@@ -11,11 +11,13 @@ from werkzeug.security import (
     generate_password_hash, check_password_hash
 )
 
-from database import buat_tabel, get_db_connection
+from database import IntegrityError, buat_tabel, get_db_connection
 
 
 app = Flask(__name__)
-app.secret_key = "grade_master_v2_kunci_sementara"
+app.secret_key = os.environ.get(
+    "SECRET_KEY", "grade_master_v2_kunci_sementara"
+)
 
 buat_tabel()
 
@@ -177,7 +179,7 @@ def register():
                     url_for("dashboard")
                 )
 
-            except sqlite3.IntegrityError:
+            except IntegrityError:
                 flash("Nama pengguna sudah digunakan.", "error")
 
     conn.close()
@@ -303,7 +305,7 @@ def keamanan_akun():
 
                 return redirect(url_for("pengaturan_akun"))
 
-            except sqlite3.IntegrityError:
+            except IntegrityError:
                 pesan = "Username sudah digunakan."
 
     conn.close()
@@ -376,9 +378,10 @@ def tambah_mata_pelajaran():
                         id_guru, nama_mata_pelajaran
                     )
                     VALUES (?, ?)
+                    RETURNING id_mata_pelajaran
                 """, (session["id_guru"], nama))
 
-                id_mata_pelajaran = cursor.lastrowid
+                id_mata_pelajaran = cursor.fetchone()["id_mata_pelajaran"]
                 conn.commit()
                 conn.close()
 
@@ -392,7 +395,7 @@ def tambah_mata_pelajaran():
                     url_for("halaman_pilih_mata_pelajaran")
                 )
 
-            except sqlite3.IntegrityError:
+            except IntegrityError:
                 pesan = "Mata pelajaran tersebut sudah ada."
                 conn.close()
 
@@ -547,7 +550,7 @@ def hapus_mata_pelajaran(id_mata_pelajaran):
 
         conn.commit()
 
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         conn.rollback()
         flash("Mata pelajaran gagal dihapus karena masih memiliki data terkait.")
         return redirect(url_for("daftar_mata_pelajaran"))
@@ -613,7 +616,7 @@ def edit_mata_pelajaran(id_mata_pelajaran):
                         url_for("daftar_mata_pelajaran")
                     )
 
-                except sqlite3.IntegrityError:
+                except IntegrityError:
                     conn.rollback()
                     pesan = "Nama mata pelajaran tersebut sudah ada."
 
@@ -700,7 +703,7 @@ def tambah_kelas():
         conn.commit()
         flash("Kelas berhasil ditambahkan.")
 
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         flash("Nama kelas tersebut sudah digunakan.")
 
     finally:
@@ -742,7 +745,7 @@ def edit_kelas(id_kelas):
                 flash("Nama kelas berhasil diperbarui.", "success")
                 return redirect(url_for("kelola_kelas"))
 
-            except sqlite3.IntegrityError:
+            except IntegrityError:
                 pesan = "Nama kelas tersebut sudah digunakan."
 
             finally:
@@ -1010,9 +1013,10 @@ def tambah_periode():
                 status_terkunci
             )
             VALUES (?, ?, ?, 1, 0)
+            RETURNING id_periode
         """, (id_kelas, tahun_ajaran, semester))
 
-        id_periode_baru = cursor.lastrowid
+        id_periode_baru = cursor.fetchone()["id_periode"]
 
         # Pengaturan awal periode baru
         conn.execute("""
@@ -1048,7 +1052,7 @@ def tambah_periode():
 
         flash("Periode akademik baru berhasil dibuat.")
 
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         conn.rollback()
         flash("Periode gagal dibuat. Periksa kembali data periode.")
 
@@ -1371,12 +1375,13 @@ def tambah_siswa():
                 nama_siswa
             )
             VALUES (?, ?)
+            RETURNING id_siswa
         """, (
             session["id_guru"],
             nama
         ))
 
-        id_siswa = cursor.lastrowid
+        id_siswa = cursor.fetchone()["id_siswa"]
 
         # Tambahkan siswa ke periode dengan nomor sementara.
         cursor = conn.execute("""
@@ -1387,13 +1392,14 @@ def tambah_siswa():
                 status_aktif
             )
             VALUES (?, ?, ?, 1)
+            RETURNING id_periode_siswa
         """, (
             id_periode,
             id_siswa,
             -2000000000 - id_siswa
         ))
 
-        id_roster_baru = cursor.lastrowid
+        id_roster_baru = cursor.fetchone()["id_periode_siswa"]
 
         # Susun ulang posisi siswa.
         urutan = [
