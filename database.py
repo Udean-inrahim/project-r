@@ -1,12 +1,20 @@
 import os
 from pathlib import Path
 
-import psycopg
-from psycopg import errors as pg_errors
+try:
+    import psycopg
+    from psycopg import errors as pg_errors
 
-# Error yang dilempar saat unique/foreign key dilanggar.
-# Dipakai app.py sebagai pengganti sqlite3.IntegrityError.
-IntegrityError = pg_errors.IntegrityError
+    # Error yang dilempar saat unique/foreign key dilanggar.
+    # Dipakai app.py sebagai pengganti sqlite3.IntegrityError.
+    IntegrityError = pg_errors.IntegrityError
+    GALAT_PSYCOPG = None
+except Exception as kesalahan:  # noqa: BLE001
+    psycopg = None
+    GALAT_PSYCOPG = kesalahan
+
+    class IntegrityError(Exception):
+        """Cadangan saat psycopg tidak bisa dimuat."""
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -112,6 +120,11 @@ class Koneksi:
 
 
 def get_db_connection():
+    if psycopg is None:
+        raise RuntimeError(
+            f"Modul psycopg tidak tersedia: {GALAT_PSYCOPG}"
+        )
+
     koneksi = psycopg.connect(
         ambil_database_url(),
         row_factory=buat_baris,

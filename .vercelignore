@@ -1,0 +1,11 @@
+.env
+.env.*
+instance/
+__pycache__/
+*.py[cod]
+.vscode/
+take_screenshot.py
+static/dashboard_full.png
+static/dashboard_preview.png
+static/dashboard_preview_laptop.png
+static/rendered_dashboard.html

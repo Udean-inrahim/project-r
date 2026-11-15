@@ -19,7 +19,14 @@ app.secret_key = os.environ.get(
     "SECRET_KEY", "grade_master_v2_kunci_sementara"
 )
 
-buat_tabel()
+# Jangan biarkan kegagalan database saat import mematikan seluruh aplikasi.
+# Kesalahannya disimpan supaya bisa diperiksa lewat /healthz.
+galat_db_awal = None
+
+try:
+    buat_tabel()
+except Exception as kesalahan:  # noqa: BLE001
+    galat_db_awal = kesalahan
 
 
 # ==================================================
@@ -90,6 +97,59 @@ def ambil_periode(id_periode):
     """, (id_periode, session["id_guru"])).fetchone()
     conn.close()
     return data
+
+
+# ==================================================
+# PEMERIKSAAN KESEHATAN APLIKASI
+# ==================================================
+
+def samarkan(teks):
+    """Menyembunyikan kredensial dari pesan kesalahan."""
+    teks = str(teks)
+    if "@" in teks and "://" in teks:
+        awal = teks.index("://") + 3
+        akhir = teks.index("@")
+        teks = teks[:awal] + "***" + teks[akhir:]
+    return teks[:300]
+
+
+@app.route("/healthz")
+def healthz():
+    from database import GALAT_PSYCOPG, ambil_database_url
+
+    try:
+        ambil_database_url()
+        url_ada = True
+    except Exception:
+        url_ada = False
+
+    hasil = {
+        "psycopg": "ok" if GALAT_PSYCOPG is None else "gagal",
+        "database_url": "terisi" if url_ada else "kosong",
+        "skema_awal": "ok" if galat_db_awal is None else "gagal",
+    }
+
+    if GALAT_PSYCOPG is not None:
+        hasil["galat_psycopg"] = samarkan(GALAT_PSYCOPG)
+
+    if galat_db_awal is not None:
+        hasil["galat_skema_awal"] = samarkan(galat_db_awal)
+
+    try:
+        conn = get_db_connection()
+        jumlah = conn.execute(
+            "SELECT COUNT(*) AS jumlah FROM guru"
+        ).fetchone()["jumlah"]
+        conn.close()
+        hasil["database"] = "ok"
+        hasil["jumlah_guru"] = jumlah
+        kode = 200
+    except Exception as kesalahan:  # noqa: BLE001
+        hasil["database"] = "gagal"
+        hasil["galat_database"] = samarkan(kesalahan)
+        kode = 500
+
+    return jsonify(hasil), kode
 
 
 # ==================================================
