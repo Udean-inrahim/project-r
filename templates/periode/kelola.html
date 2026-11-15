@@ -54,38 +54,36 @@
 
                     {% endif %}
 
-                    <a href="{{ url_for('pilih_periode', id_periode=periode.id_periode) }}"
-                       class="teks-pilih">
-                        Buka Periode →
-                    </a>
+                    <div class="aksi-periode">
+                        <a href="{{ url_for('pilih_periode', id_periode=periode.id_periode) }}"
+                           class="teks-pilih">
+                            Buka Periode
+                        </a>
 
-                    {% if periode.status_terkunci == 1 %}
+                        {% if periode.status_terkunci == 1 %}
 
-                        <form method="POST"
-                            action="{{ url_for('aktifkan_periode', id_periode=periode.id_periode) }}"
-                            onsubmit="return confirm('Aktifkan kembali periode ini? Periode yang sedang aktif akan dikunci.');">
+                            <form method="POST"
+                                action="{{ url_for('aktifkan_periode', id_periode=periode.id_periode) }}"
+                                onsubmit="return confirm('Aktifkan kembali periode ini? Periode yang sedang aktif akan dikunci.');">
 
-                            <button type="submit" class="btn-tambah">
-                                Aktifkan
-                            </button>
+                                <button type="submit" class="btn-tambah">
+                                    Aktifkan
+                                </button>
 
-                        </form>
+                            </form>
 
-                    {% endif %}
+                            <form method="POST"
+                                action="{{ url_for('hapus_periode', id_periode=periode.id_periode) }}"
+                                onsubmit="return confirm('PERINGATAN! Periode ini beserta daftar siswa, tugas, nilai, pengaturan, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
 
-                    {% if periode.status_terkunci == 1 %}
+                                <button type="submit" class="btn-batal">
+                                    Hapus
+                                </button>
 
-                        <form method="POST"
-                            action="{{ url_for('hapus_periode', id_periode=periode.id_periode) }}"
-                            onsubmit="return confirm('PERINGATAN! Periode ini beserta daftar siswa, tugas, nilai, pengaturan, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
+                            </form>
 
-                            <button type="submit" class="btn-batal">
-                                Hapus
-                            </button>
-
-                        </form>
-
-                    {% endif %}
+                        {% endif %}
+                    </div>
 
                 </article>
 
@@ -136,7 +134,7 @@
 
             {% if daftar_periode %}
 
-                <label>
+                <label class="salin-siswa-label">
                     <input type="checkbox" name="salin_siswa">
                     Salin daftar siswa dari periode aktif sebelumnya
                 </label>

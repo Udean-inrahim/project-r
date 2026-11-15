@@ -56,7 +56,7 @@
         <h2>Pengaturan Jumlah Tugas</h2>
         <p>
             Tentukan jumlah tugas yang akan dinilai.
-            Tugas yang sudah dibuat tidak akan dihapus ketika jumlah ditambah.
+            Jumlah dapat dikurangi jika tugas yang dihapus belum memiliki nilai.
         </p>
 
         {% if periode.status_terkunci == 0 %}
@@ -69,7 +69,7 @@
                 type="number"
                 id="jumlah_tugas"
                 name="jumlah_tugas"
-                min="{{ daftar_tugas|length if daftar_tugas else 1 }}"
+                min="1"
                 max="100"
                 value="{{ daftar_tugas|length }}"
                 required

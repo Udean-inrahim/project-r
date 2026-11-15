@@ -42,6 +42,49 @@ def login_required(f):
     return decorated_function
 
 
+def kurangi_jumlah_tugas(conn, id_periode, jumlah_lama, jumlah_baru):
+    if jumlah_baru < 1 or jumlah_baru >= jumlah_lama:
+        return False
+
+    conn.execute("BEGIN")
+    tugas_dihapus = conn.execute("""
+        SELECT id_tugas
+        FROM tugas
+        WHERE id_periode = ?
+        ORDER BY id_tugas DESC
+        LIMIT ?
+        FOR UPDATE
+    """, (id_periode, jumlah_lama - jumlah_baru)).fetchall()
+    id_tugas_dihapus = [tugas["id_tugas"] for tugas in tugas_dihapus]
+    if len(id_tugas_dihapus) != jumlah_lama - jumlah_baru:
+        conn.rollback()
+        return False
+
+    nilai_tersimpan = conn.execute("""
+        SELECT 1
+        FROM nilai_tugas
+        WHERE id_tugas = ANY(?::integer[])
+          AND nilai IS NOT NULL
+        LIMIT 1
+    """, (id_tugas_dihapus,)).fetchone()
+    if nilai_tersimpan:
+        conn.rollback()
+        return False
+
+    for id_tugas in id_tugas_dihapus:
+        conn.execute("""
+            DELETE FROM tugas
+            WHERE id_tugas = ? AND id_periode = ?
+        """, (id_tugas, id_periode))
+    conn.execute("""
+        UPDATE pengaturan_penilaian
+        SET jumlah_tugas = ?
+        WHERE id_periode = ?
+    """, (jumlah_baru, id_periode))
+    conn.commit()
+    return True
+
+
 def ambil_mata_pelajaran(id_mata_pelajaran):
     if not id_mata_pelajaran:
         return None
@@ -2463,14 +2506,25 @@ def halaman_penilaian():
                         if jumlah_baru < 1:
                             flash("Jumlah tugas minimal 1.")
 
-                        elif jumlah_baru < jumlah_lama:
-                            flash(
-                                "Jumlah tugas tidak boleh dikurangi "
-                                "karena nilai tugas sebelumnya harus tetap tersimpan."
-                            )
-
                         elif jumlah_baru > 100:
                             flash("Jumlah tugas maksimal 100.")
+
+                        elif jumlah_baru < jumlah_lama:
+                            try:
+                                berhasil_dikurangi = kurangi_jumlah_tugas(
+                                    conn, id_periode, jumlah_lama, jumlah_baru
+                                )
+                            except Exception:
+                                conn.rollback()
+                                raise
+
+                            if not berhasil_dikurangi:
+                                flash(
+                                    "Jumlah tugas tidak bisa dikurangi: nilai tersimpan pada tugas yang akan dihapus. "
+                                    "Kosongkan nilai tersebut terlebih dahulu."
+                                )
+                            else:
+                                flash(f"Jumlah tugas berhasil dikurangi menjadi {jumlah_baru}.")
 
                         else:
                             for nomor in range(
