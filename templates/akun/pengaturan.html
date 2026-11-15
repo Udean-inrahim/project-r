@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Pengaturan Akun</h1>
+            <p>Kelola identitas akun GRADE MASTER Anda.</p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    <section class="daftar-penugasan">
+
+        <article class="kartu-penugasan">
+
+            <h2>Profil Guru</h2>
+            <p>Ubah nama yang ditampilkan pada akun Anda.</p>
+
+            <form method="POST">
+
+                <div class="form-group">
+                    <label for="nama_lengkap">Nama Guru</label>
+
+                    <input
+                        type="text"
+                        id="nama_lengkap"
+                        name="nama_lengkap"
+                        value="{{ guru.nama_lengkap }}"
+                        required
+                    >
+                </div>
+
+                {% if pesan %}
+                    <p class="pesan-error">{{ pesan }}</p>
+                {% endif %}
+
+                <button type="submit" class="btn-tambah">
+                    Simpan Nama
+                </button>
+
+            </form>
+
+        </article>
+
+        <article class="kartu-penugasan">
+
+            <h2>Keamanan Akun</h2>
+            <p>Kelola nama pengguna dan kata sandi akun Anda.</p>
+
+            <a href="{{ url_for('keamanan_akun') }}"
+               class="teks-pilih">
+                Ubah Nama Pengguna dan Kata Sandi →
+            </a>
+
+        </article>
+
+    </section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - GRADE MASTER</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/login.css') }}">
+
+    <style>
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding-right: 45px;
+            box-sizing: border-box;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            padding: 5px;
+            cursor: pointer;
+            color: #64748b;
+            width: auto;
+        }
+
+        .toggle-password svg {
+            width: 21px;
+            height: 21px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Kata sandi tersembunyi: mata dicoret */
+        #eye-open {
+            display: none;
+        }
+
+        #eye-closed {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="login-container">
+        <div class="login-card">
+
+            <h1>GRADE MASTER</h1>
+            <p>Silakan masuk ke akun guru Anda</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+
+                <div class="form-group">
+                    <label for="username">Nama Pengguna</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Masukkan nama pengguna"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Kata Sandi</label>
+
+                    <div class="password-wrapper">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Masukkan kata sandi"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="toggle-password"
+                            id="toggle-password"
+                            aria-label="Tampilkan kata sandi"
+                        >
+                            <!-- Ikon mata terbuka -->
+                            <svg id="eye-open"
+                                 viewBox="0 0 24 24">
+                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+
+                            <!-- Ikon mata dicoret -->
+                            <svg id="eye-closed"
+                                 viewBox="0 0 24 24">
+                                <path d="M3 3l18 18"/>
+                                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
+                                <path d="M9.9 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a14.8 14.8 0 0 1-3.1 3.8"/>
+                                <path d="M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-button">
+                    Masuk
+                </button>
+
+            </form>
+
+            <p class="register-link">
+                Belum punya akun?
+                <a href="{{ url_for('register') }}">Daftar di sini</a>
+            </p>
+
+        </div>
+    </main>
+
+    <script>
+        const password = document.getElementById("password");
+        const tombol = document.getElementById("toggle-password");
+        const eyeOpen = document.getElementById("eye-open");
+        const eyeClosed = document.getElementById("eye-closed");
+
+        tombol.addEventListener("click", function () {
+            const sekarangTersembunyi =
+                password.type === "password";
+
+            if (sekarangTersembunyi) {
+                password.type = "text";
+
+                // Tulisan terlihat: mata terbuka
+                eyeOpen.style.display = "block";
+                eyeClosed.style.display = "none";
+
+                tombol.setAttribute(
+                    "aria-label",
+                    "Sembunyikan password"
+                );
+            } else {
+                password.type = "password";
+
+                // Tulisan tersembunyi: mata dicoret
+                eyeOpen.style.display = "none";
+                eyeClosed.style.display = "block";
+
+                tombol.setAttribute(
+                    "aria-label",
+                    "Tampilkan password"
+                );
+            }
+        });
+    </script>
+
+</body>
+</html>

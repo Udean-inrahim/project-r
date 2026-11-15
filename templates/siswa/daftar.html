@@ -1,0 +1,235 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Data Siswa</h1>
+            <p>Kelola data siswa pada kelas dan periode akademik.</p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    {% with pesan = get_flashed_messages(with_categories=true) %}
+        {% if pesan %}
+            {% for kategori, isi in pesan %}
+                <div class="pesan {{ kategori }}">
+                    {{ isi }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="daftar-penugasan info-kelas-panel">
+
+        <h2>Informasi Kelas</h2>
+
+        <p>Kelas: <strong>{{ kelas.nama_kelas }}</strong></p>
+
+        <p>
+            Periode:
+            <strong>
+                {{ periode.tahun_ajaran }} - {{ periode.semester }}
+            </strong>
+        </p>
+
+    </section>
+
+    <section class="daftar-penugasan pengaturan-penilaian-panel">
+        <h2>Pengaturan Penilaian</h2>
+
+        {% if not pengaturan or pengaturan.bobot_sudah_diatur == 0 %}
+
+            <p>
+                Atur bobot penilaian terlebih dahulu sebelum melanjutkan
+                ke proses penilaian siswa.
+            </p>
+
+            <a href="{{ url_for('pengaturan_bobot', sumber='data_siswa') }}" class="btn-tambah">
+                Atur Bobot Penilaian
+            </a>
+        {% else %}
+
+            <p>Bobot penilaian sudah berhasil diatur.</p>
+
+            <a href="{{ url_for('halaman_penilaian') }}" class="btn-tambah">
+                Lanjut ke Penilaian
+            </a>
+
+        {% endif %}
+    </section>
+
+    {% if periode.status_terkunci == 0 %}
+
+    <section class="tambah-kelas tambah-siswa-panel">
+
+        <h2>Tambah Siswa</h2>
+
+        <form method="POST" action="{{ url_for('tambah_siswa') }}">
+
+            <label>Nama Siswa</label>
+            <input type="text"
+                   name="nama_siswa"
+                   placeholder="Masukkan nama siswa"
+                   required>
+
+            <label>Nomor Absen</label>
+            <input type="number"
+                   name="no_absen"
+                   min="1"
+                   placeholder="Masukkan nomor absen"
+                   required>
+
+            <button type="submit" class="btn-tambah">
+                + Tambah Siswa
+            </button>
+
+        </form>
+
+    </section>
+
+    {% endif %}
+
+    <section class="daftar-penugasan daftar-siswa-panel">
+
+        <h2>Daftar Siswa</h2>
+
+        {% if daftar_siswa %}
+
+            <div class="tabel-responsive">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nomor</th>
+                            <th>Nomor Absen</th>
+                            <th>Nama Siswa</th>
+                            <th>Keadaan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for siswa in daftar_siswa %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ siswa.no_absen }}</td>
+                            <td>{{ siswa.nama_siswa }}</td>
+
+                            <td>
+                                {% if siswa.status_aktif == 1 %}
+                                    Aktif
+                                {% else %}
+                                    Tidak Aktif
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if periode.status_terkunci == 0 %}
+                                    <a href="{{ url_for('edit_siswa', id_siswa=siswa.id_siswa) }}"
+                                       class="teks-pilih">
+                                        Ubah
+                                    </a>
+                                    <form method="POST"
+                                        action="{{ url_for('hapus_siswa', id_siswa=siswa.id_siswa) }}"
+                                        onsubmit="return confirm('Yakin menghapus siswa ini secara permanen beserta seluruh riwayat akademiknya?');">
+
+                                        <button type="submit" class="btn-batal">
+                                            Hapus
+                                        </button>
+
+                                    </form>
+                                {% else %}
+                                    <span>Terkunci</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="kosong">
+                <h3>Belum Ada Data Siswa</h3>
+                <p>Silakan tambahkan siswa terlebih dahulu.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+    <section class="daftar-penugasan arsip-siswa-panel">
+
+        <h2>Arsip Siswa</h2>
+
+        <p>
+            Siswa yang diarsipkan tidak ditampilkan dalam daftar aktif,
+            tetapi riwayat akademiknya tetap tersimpan.
+        </p>
+
+        {% if siswa_arsip %}
+
+            <div class="tabel-responsive">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nomor</th>
+                            <th>Nomor Absen Sebelumnya</th>
+                            <th>Nama Siswa</th>
+                            <th>Keadaan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for siswa in siswa_arsip %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ siswa.no_absen }}</td>
+                            <td>{{ siswa.nama_siswa }}</td>
+                            <td>Diarsipkan</td>
+                            <td>
+                                <form method="POST"
+                                    action="{{ url_for('pulihkan_siswa', id_siswa=siswa.id_siswa) }}">
+                                    <button type="submit" class="btn-tambah">
+                                        Pulihkan
+                                    </button>
+                                </form>
+
+                                <form method="POST"
+                                    action="{{ url_for('hapus_siswa', id_siswa=siswa.id_siswa) }}"
+                                    onsubmit="return confirm('Yakin menghapus siswa ini secara permanen beserta seluruh riwayat akademiknya?');">
+                                    <button type="submit" class="btn-batal">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="kosong">
+                <h3>Belum Ada Siswa yang Diarsipkan</h3>
+                <p>Siswa yang diarsipkan akan muncul di sini.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+{% endblock %}

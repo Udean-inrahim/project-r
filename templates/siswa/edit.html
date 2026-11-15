@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Ubah Data Siswa</h1>
+            <p>Perbarui informasi siswa yang dipilih.</p>
+        </div>
+
+        <a href="{{ url_for('daftar_siswa') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    {% with pesan = get_flashed_messages(with_categories=true) %}
+        {% if pesan %}
+            {% for kategori, isi in pesan %}
+                <div class="pesan {{ kategori }}">
+                    {{ isi }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="tambah-kelas">
+
+        <form method="POST"
+              action="{{ url_for('edit_siswa', id_siswa=siswa.id_siswa) }}">
+
+            <label>Nama Siswa</label>
+            <input type="text"
+                   name="nama_siswa"
+                   value="{{ siswa.nama_siswa }}"
+                   required>
+
+            <label>Nomor Absen</label>
+            <input type="number"
+                   name="no_absen"
+                   value="{{ siswa.no_absen }}"
+                   min="1"
+                   required>
+
+            <button type="submit" class="btn-tambah">
+                Simpan Perubahan
+            </button>
+
+        </form>
+
+        <hr>
+
+        <form method="POST"
+              action="{{ url_for('arsipkan_siswa', id_siswa=siswa.id_siswa) }}"
+              onsubmit="return confirm('Yakin ingin mengarsipkan siswa ini? Siswa akan dikeluarkan dari daftar aktif, tetapi riwayat nilainya tetap tersimpan.');">
+
+            <button type="submit" class="btn-batal">
+                Arsipkan Siswa
+            </button>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

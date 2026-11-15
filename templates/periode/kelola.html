@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Periode Akademik</h1>
+            <p>Kelola tahun ajaran dan semester kelas {{ kelas.nama_kelas }}.</p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-batal">
+            Kembali 
+        </a>
+    </header>
+
+    {% with pesan = get_flashed_messages(with_categories=true) %}
+        {% if pesan %}
+            {% for kategori, isi in pesan %}
+                <div class="pesan {{ kategori }}">
+                    {{ isi }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="daftar-penugasan">
+
+        <h2>Daftar Periode Akademik</h2>
+
+        {% if daftar_periode %}
+
+            {% for periode in daftar_periode %}
+
+                <article class="kartu-penugasan">
+
+                    <h3>
+                        {{ periode.tahun_ajaran }}
+                        {{ periode.semester }}
+                    </h3>
+
+                    {% if periode.status_aktif == 1 %}
+
+                        <p><strong>Periode Aktif</strong></p>
+
+                    {% elif periode.status_terkunci == 1 %}
+
+                        <p>Periode Selesai / Terkunci</p>
+
+                    {% else %}
+
+                        <p>Periode Tidak Aktif</p>
+
+                    {% endif %}
+
+                    <a href="{{ url_for('pilih_periode', id_periode=periode.id_periode) }}"
+                       class="teks-pilih">
+                        Buka Periode →
+                    </a>
+
+                    {% if periode.status_terkunci == 1 %}
+
+                        <form method="POST"
+                            action="{{ url_for('aktifkan_periode', id_periode=periode.id_periode) }}"
+                            onsubmit="return confirm('Aktifkan kembali periode ini? Periode yang sedang aktif akan dikunci.');">
+
+                            <button type="submit" class="btn-tambah">
+                                Aktifkan
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                    {% if periode.status_terkunci == 1 %}
+
+                        <form method="POST"
+                            action="{{ url_for('hapus_periode', id_periode=periode.id_periode) }}"
+                            onsubmit="return confirm('PERINGATAN! Periode ini beserta daftar siswa, tugas, nilai, pengaturan, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
+
+                            <button type="submit" class="btn-batal">
+                                Hapus
+                            </button>
+
+                        </form>
+
+                    {% endif %}
+
+                </article>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="kosong">
+                <h3>Belum Ada Periode Akademik</h3>
+                <p>Silakan buat periode akademik pertama untuk kelas ini.</p>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+    <section class="tambah-kelas">
+
+        <h2>Tambah Periode Akademik</h2>
+
+        <p>
+            Periode baru akan menjadi periode aktif.
+            Periode aktif sebelumnya akan dikunci.
+        </p>
+
+        <form method="POST" action="{{ url_for('tambah_periode') }}">
+
+            <input type="hidden"
+                   name="id_kelas"
+                   value="{{ kelas.id_kelas }}">
+
+            <label>Tahun Ajaran</label>
+
+            <input type="text"
+                   name="tahun_ajaran"
+                   placeholder="Contoh: 2026/2027"
+                   pattern="[0-9]{4}/[0-9]{4}"
+                   title="Gunakan format tahun ajaran, misalnya 2026/2027"
+                   required>
+
+            <label>Semester</label>
+
+            <select name="semester" required>
+                <option value="">Pilih Semester</option>
+                <option value="Ganjil">Ganjil</option>
+                <option value="Genap">Genap</option>
+            </select>
+
+            {% if daftar_periode %}
+
+                <label>
+                    <input type="checkbox" name="salin_siswa">
+                    Salin daftar siswa dari periode aktif sebelumnya
+                </label>
+
+                <p>
+                    Data nilai dan tugas tidak akan ikut disalin.
+                </p>
+
+            {% endif %}
+
+            <button type="submit" class="btn-tambah">
+                + Buat Periode Akademik
+            </button>
+
+        </form>
+
+    </section>
+
+</div>
+
+{% endblock %}

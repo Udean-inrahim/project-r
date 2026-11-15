@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Rekapitulasi Nilai</h1>
+            <p>Ringkasan hasil penilaian akademik siswa.</p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    <section class="tambah-kelas">
+        <h3>Periode Akademik</h3>
+        <p>{{ periode.tahun_ajaran }} - {{ periode.semester }}</p>
+    </section>
+
+    <section class="daftar-penugasan">
+        <h2>Ringkasan Kelas</h2>
+
+        <div class="rekap-grid">
+
+            <div class="rekap-card">
+                <h3>Jumlah Siswa</h3>
+                <p>{{ jumlah_siswa }}</p>
+            </div>
+
+            <div class="rekap-card">
+                <h3>Rata-rata Kelas</h3>
+                <p>
+                    {% if rata_rata_kelas is not none %}
+                        {{ "%.2f"|format(rata_rata_kelas) }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="rekap-card">
+                <h3>Nilai Tertinggi</h3>
+                {% if siswa_tertinggi %}
+                    <p>{{ "%.2f"|format(siswa_tertinggi.nilai_akhir) }}</p>
+                    <small>{{ siswa_tertinggi.nama_siswa }}</small>
+                {% else %}
+                    <p>-</p>
+                {% endif %}
+            </div>
+
+            <div class="rekap-card">
+                <h3>Nilai Terendah</h3>
+                {% if siswa_terendah %}
+                    <p>{{ "%.2f"|format(siswa_terendah.nilai_akhir) }}</p>
+                    <small>{{ siswa_terendah.nama_siswa }}</small>
+                {% else %}
+                    <p>-</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </section>
+
+    <section class="daftar-penugasan">
+        <h2>Status Ketuntasan Minimum</h2>
+
+        <div class="rekap-grid">
+
+            <div class="rekap-card">
+                <h3>Tuntas</h3>
+                <p>{{ jumlah_tuntas }} siswa</p>
+            </div>
+
+            <div class="rekap-card">
+                <h3>Belum Tuntas</h3>
+                <p>{{ jumlah_belum_tuntas }} siswa</p>
+            </div>
+
+            <div class="rekap-card">
+                <h3>Belum Lengkap</h3>
+                <p>{{ jumlah_belum_lengkap }} siswa</p>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="daftar-penugasan">
+        <h2>Daftar Hasil Nilai Siswa</h2>
+
+        {% if hasil_rekap %}
+        <div class="tabel-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nomor Absen</th>
+                        <th>Nama Siswa</th>
+                        <th>Nilai Akhir</th>
+                        <th>Predikat</th>
+                        <th>Status Ketuntasan</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for siswa in hasil_rekap %}
+                    <tr>
+                        <td>{{ siswa.no_absen }}</td>
+                        <td>{{ siswa.nama_siswa }}</td>
+
+                        <td>
+                            {% if siswa.nilai_akhir is not none %}
+                                {{ "%.2f"|format(siswa.nilai_akhir) }}
+                            {% else %}
+                                Belum lengkap
+                            {% endif %}
+                        </td>
+
+                        <td>{{ siswa.grade or "-" }}</td>
+
+                        <td>{{ siswa.status_kkm or "Belum dihitung" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="kosong">
+            <h3>Belum Ada Siswa</h3>
+            <p>Belum ada siswa aktif pada periode ini.</p>
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dasbor | GRADE MASTER</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+
+<div class="app-container">
+    <!-- ============================================================
+         COLUMN 1: LEFT SIDEBAR
+         ============================================================ -->
+    <aside class="sidebar">
+        <div>
+            <!-- Logo GRADE MASTER -->
+            <div class="logo-block">
+                <div class="logo-shapes">
+                    <span class="logo-shape-left"></span>
+                    <span class="logo-shape-right"></span>
+                </div>
+                <div class="logo-text-wrap">
+                    <span class="logo-text">GRADE MASTER</span>
+                    <span class="logo-subtext">Sistem Pengelolaan Nilai Akademik</span>
+                </div>
+            </div>
+
+            <!-- Navigation Menu (Sesuai Foto Referensi User) -->
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('dashboard') }}" class="nav-item active">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    </span>
+                    <span>Dasbor</span>
+                </a>
+
+                <a href="{{ url_for('daftar_siswa') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </span>
+                    <span>Data Siswa</span>
+                </a>
+
+                <a href="{{ url_for('pengaturan_bobot', sumber='dashboard') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="4" y1="21" x2="4" y2="14"></line>
+                            <line x1="4" y1="10" x2="4" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12" y2="3"></line>
+                            <line x1="20" y1="21" x2="20" y2="16"></line>
+                            <line x1="20" y1="12" x2="20" y2="3"></line>
+                            <line x1="1" y1="14" x2="7" y2="14"></line>
+                            <line x1="9" y1="8" x2="15" y2="8"></line>
+                            <line x1="17" y1="16" x2="23" y2="16"></line>
+                        </svg>
+                    </span>
+                    <span>Pengaturan Bobot</span>
+                </a>
+
+                <a href="{{ url_for('halaman_penilaian') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                    </span>
+                    <span>Perhitungan Nilai</span>
+                </a>
+
+                <a href="{{ url_for('rekapitulasi_nilai') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </span>
+                    <span>Rekapitulasi Nilai</span>
+                </a>
+
+                <a href="{{ url_for('daftar_mata_pelajaran') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                    </span>
+                    <span>Kelola Mata Pelajaran</span>
+                </a>
+
+                <a href="{{ url_for('halaman_pilih_mata_pelajaran') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </span>
+                    <span>Ganti Mata Pelajaran</span>
+                </a>
+
+                <a href="{{ url_for('pengaturan_akun') }}" class="nav-item">
+                    <span class="nav-icon">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </span>
+                    <span>Pengaturan Akun</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Tombol Keluar (Sidebar Bottom Action) -->
+        <button type="button" class="sidebar-logout-card" onclick="tampilkanKonfirmasiKeluar()" aria-label="Keluar dari akun">
+            <div class="logout-card-content">
+                <div class="logout-card-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </div>
+                <div class="logout-card-info">
+                    <strong class="logout-card-title">Keluar Akun</strong>
+                    <span class="logout-card-sub">Akhiri sesi login</span>
+                </div>
+            </div>
+            <div class="logout-card-action">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </div>
+        </button>
+    </aside>
+
+    <!-- ============================================================
+         COLUMN 2: CENTER MAIN CONTENT AREA (EXPANDED)
+         ============================================================ -->
+    <main class="main-area">
+        <!-- Top Search Bar & Date -->
+        <header class="topbar">
+            <div class="search-box-container">
+                <div class="search-box">
+                    <input type="text" id="globalSearchInput" class="search-input" placeholder="Cari siswa, kelas, nilai, atau menu..." aria-label="Cari" autocomplete="off">
+                    <button type="button" id="searchClearBtn" class="search-clear-btn" title="Hapus pencarian">&times;</button>
+                    <span class="search-kbd-badge" title="Pintasan keyboard">Ctrl K</span>
+                </div>
+
+                <!-- Floating Dropdown Hasil Pencarian -->
+                <div id="searchDropdown" class="search-dropdown" aria-hidden="true">
+                    <div id="searchDropdownContent" class="search-dropdown-content">
+                        <!-- Konten hasil pencarian diisi via JavaScript -->
+                    </div>
+                    <div class="search-dropdown-footer">
+                        <span>Gunakan tombol <kbd>↑</kbd> <kbd>↓</kbd> untuk memilih</span>
+                        <span>Tekan <kbd>Enter</kbd> untuk buka • <kbd>Esc</kbd> tutup</span>
+                    </div>
+                </div>
+            </div>
+
+            <span class="today-date">{{ tanggal_hari_ini }}</span>
+        </header>
+
+        <!-- Welcome Hero Banner -->
+        <section class="welcome-card">
+            <div class="welcome-info">
+                <h1 class="welcome-title">Selamat Datang, {{ nama_guru }}!</h1>
+                <p class="welcome-sub">
+                    Selamat bekerja. Kelola kelas, nilai siswa, dan periode akademik aktif melalui GRADE MASTER.
+                    Pilih kelas atau lanjutkan pengelolaan nilai.
+                </p>
+                {% if kelas_aktif and periode_aktif %}
+                    <a href="{{ url_for('daftar_siswa') }}" class="btn-pill-blue">Buka Data Siswa</a>
+                {% else %}
+                    <a href="{{ url_for('kelola_kelas') }}" class="btn-pill-blue">Pilih Kelas</a>
+                {% endif %}
+            </div>
+            <div class="welcome-illustration">
+                <img src="{{ url_for('static', filename='images/isometric_books_clean.png') }}" alt="Ilustrasi tumpukan buku" width="348" height="318">
+            </div>
+        </section>
+
+        <!-- Daftar kelas dari basis data -->
+        <section class="classes-section">
+            <div class="section-header">
+                <h2 class="section-title">Kelas di {{ mata_pelajaran_aktif.nama_mata_pelajaran if mata_pelajaran_aktif else 'mata pelajaran aktif' }}</h2>
+                <a href="{{ url_for('kelola_kelas') }}" class="section-link">Kelola Kelas</a>
+            </div>
+            <div class="classes-cards-grid">
+                {% for kelas in daftar_kelas %}
+                    <a class="class-card blue" href="{{ url_for('kelola_periode', id_kelas=kelas.id_kelas) }}">
+                        <div class="class-card-title">{{ kelas.nama_kelas }}</div>
+                        <div class="class-card-meta">
+                            <span>{{ kelas.jumlah_siswa }} siswa aktif</span>
+                            <span>{% if kelas.tahun_ajaran %}{{ kelas.tahun_ajaran }} · {{ kelas.semester }}{% else %}Belum ada periode akademik{% endif %}</span>
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="dashboard-empty-state">
+                        <h3>Belum ada kelas</h3>
+                        <p>Tambahkan kelas pada mata pelajaran ini untuk melihat ringkasannya.</p>
+                        <a href="{{ url_for('kelola_kelas') }}">Kelola Kelas</a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="lessons-section">
+            <div class="section-header">
+                <h2 class="section-title">Periode kelas aktif</h2>
+                {% if kelas_aktif %}<a href="{{ url_for('kelola_periode', id_kelas=kelas_aktif.id_kelas) }}" class="section-link">Kelola Periode</a>{% endif %}
+            </div>
+            {% if kelas_aktif and periode_aktif %}
+                <div class="dashboard-period-card">
+                    <div><span>Kelas</span><strong>{{ kelas_aktif.nama_kelas }}</strong></div>
+                    <div><span>Mata Pelajaran</span><strong>{{ mata_pelajaran_aktif.nama_mata_pelajaran }}</strong></div>
+                    <div><span>Periode</span><strong>{{ periode_aktif.tahun_ajaran }} · {{ periode_aktif.semester }}</strong></div>
+                    <a href="{{ url_for('halaman_penilaian') }}">Buka Perhitungan Nilai</a>
+                </div>
+            {% else %}
+                <div class="dashboard-empty-state">
+                    {% if kelas_aktif %}
+                        <p>Belum ada periode akademik untuk kelas ini.</p>
+                        <a href="{{ url_for('kelola_periode', id_kelas=kelas_aktif.id_kelas) }}">Kelola Periode</a>
+                    {% else %}
+                        <p>Pilih atau tambahkan kelas untuk mengelola periode akademik.</p>
+                        <a href="{{ url_for('kelola_kelas') }}">Kelola Kelas</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <!-- ============================================================
+         COLUMN 3: RIGHT PROFILE & CALENDAR SIDEBAR
+         ============================================================ -->
+    <aside class="profile-sidebar">
+        <!-- Profile Card (Aesthetic Teacher Card) -->
+        <div class="profile-card">
+            <div class="profile-card-banner"></div>
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar-initial">{{ nama_guru[0]|upper }}</div>
+            </div>
+
+            <div class="profile-name-row">
+                <h3 class="profile-name">{{ nama_guru }}</h3>
+            </div>
+            <span class="profile-role">Guru Pengampu{% if mata_pelajaran_aktif %} · {{ mata_pelajaran_aktif.nama_mata_pelajaran }}{% endif %}</span>
+
+            <!-- Quick Academic Stats -->
+            <div class="profile-stats-grid">
+                <div class="profile-stat-box">
+                    <span class="profile-stat-val">{{ daftar_kelas|length }}</span>
+                    <span class="profile-stat-lbl">Kelas</span>
+                </div>
+                <div class="profile-stat-box">
+                    <span class="profile-stat-val">{{ total_siswa }}</span>
+                    <span class="profile-stat-lbl">Siswa</span>
+                </div>
+                <div class="profile-stat-box">
+                    <span class="profile-stat-val">{{ kelas_aktif.nama_kelas if kelas_aktif else '-' }}</span>
+                    <span class="profile-stat-lbl">Kelas dipilih</span>
+                </div>
+            </div>
+
+            <a href="{{ url_for('pengaturan_akun') }}" class="btn-profile-pill">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                Pengaturan Akun
+            </a>
+        </div>
+
+        <!-- Calendar Widget (Interactive & Dynamic) -->
+        <div class="calendar-widget">
+            <div class="calendar-header">
+                <button type="button" class="cal-nav-btn" id="calPrev" title="Bulan Sebelumnya">&lt;</button>
+                <span class="cal-month" id="calMonthLabel">November 2026</span>
+                <button type="button" class="cal-nav-btn" id="calNext" title="Bulan Berikutnya">&gt;</button>
+            </div>
+            <table class="cal-grid">
+                <thead>
+                    <tr>
+                        <th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th><th>Min</th>
+                    </tr>
+                </thead>
+                <tbody id="calDaysBody">
+                    <!-- Dinamis via JavaScript -->
+                </tbody>
+            </table>
+            <!-- Info tanggal yang diklik -->
+            <div id="calDateInfo" class="cal-date-info" style="display:none;"></div>
+        </div>
+
+        <!-- Reminders / Pengingat & Agenda Akademik -->
+        <div class="reminders-section">
+            <div class="reminders-header">
+                <h4 class="reminders-title">Agenda Akademik</h4>
+                <div class="reminders-header-actions">
+                    <button type="button" class="btn-add-reminder" id="btnAddReminder" title="Tambah Pengingat Baru">+ Tambah</button>
+                    <a href="{{ url_for('rekapitulasi_nilai') }}" class="reminders-link" title="Lihat Rekapitulasi Nilai">Rekap &gt;</a>
+                </div>
+            </div>
+
+            <!-- List of reminders -->
+            <div id="remindersList" class="reminders-list">
+                <!-- Dinamis via JavaScript -->
+            </div>
+        </div>
+
+    </aside>
+</div>
+
+<!-- Modal Konfirmasi Keluar -->
+<div id="modalKeluar" class="modal-konfirmasi" aria-hidden="true">
+    <div class="dialog-card" role="dialog" aria-modal="true" aria-labelledby="logout-title" aria-describedby="logout-description" tabindex="-1">
+        <h3 id="logout-title">Keluar dari Akun?</h3>
+        <p id="logout-description">Apakah Anda yakin ingin keluar dari sesi GRADE MASTER?</p>
+        <div class="dialog-actions">
+            <button type="button" class="btn-secondary" onclick="tutupKonfirmasiKeluar()">Batal</button>
+            <a href="{{ url_for('logout') }}" class="btn-danger">Keluar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // MODAL KONFIRMASI KELUAR
+    // ============================================================
+    const modal = document.getElementById('modalKeluar');
+    const dialog = modal.querySelector('[role="dialog"]');
+    let pemicuDialog;
+    function tampilkanKonfirmasiKeluar() {
+        pemicuDialog = document.activeElement;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        dialog.focus();
+    }
+    function tutupKonfirmasiKeluar() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        if (pemicuDialog) pemicuDialog.focus();
+    }
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) tutupKonfirmasiKeluar();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            tutupKonfirmasiKeluar();
+        }
+    });
+
+    // ============================================================
+    // GLOBAL SEARCH BAR & INSTANT AUTOCOMPLETE DROPDOWN
+    // ============================================================
+    const searchInput = document.getElementById('globalSearchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+    const searchDropdownContent = document.getElementById('searchDropdownContent');
+    const searchClearBtn = document.getElementById('searchClearBtn');
+    let debounceTimer = null;
+    let selectedIndex = -1;
+
+    function openSearchDropdown() {
+        searchDropdown.classList.add('is-open');
+        searchDropdown.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSearchDropdown() {
+        searchDropdown.classList.remove('is-open');
+        searchDropdown.setAttribute('aria-hidden', 'true');
+        selectedIndex = -1;
+    }
+
+    function highlightMatch(text, query) {
+        if (!query) return text;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+
+    function renderSearchResults(data, query) {
+        let html = '';
+        const { fitur, siswa, kelas, mapel } = data.results || {};
+        const total = data.total || 0;
+
+        if (total === 0) {
+            html = `
+                <div class="search-empty-state">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="margin-bottom:6px;">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <p style="margin:4px 0 2px; font-weight:600; color:#475569;">Tidak ada hasil untuk "<strong>${escapeHtml(query)}</strong>"</p>
+                    <small style="color:#94a3b8;">Coba kata kunci nama siswa, kelas, atau fitur nilai.</small>
+                </div>
+            `;
+            searchDropdownContent.innerHTML = html;
+            openSearchDropdown();
+            return;
+        }
+
+        // 1. Group Siswa
+        if (siswa && siswa.length > 0) {
+            html += `<div class="search-group-title">Siswa Terdaftar (${siswa.length})</div>`;
+            siswa.forEach(item => {
+                const initial = item.judul ? item.judul.trim().charAt(0).toUpperCase() : 'S';
+                html += `
+                    <a href="${item.url}" class="search-result-item" data-url="${item.url}">
+                        <div class="search-item-icon siswa">${initial}</div>
+                        <div class="search-item-info">
+                            <div class="search-item-title">${highlightMatch(escapeHtml(item.judul), query)}</div>
+                            <div class="search-item-desc">${escapeHtml(item.deskripsi)}</div>
+                        </div>
+                        <span class="search-item-badge">Siswa</span>
+                    </a>
+                `;
+            });
+        }
+
+        // 2. Group Kelas
+        if (kelas && kelas.length > 0) {
+            html += `<div class="search-group-title">Kelas Akademik</div>`;
+            kelas.forEach(item => {
+                html += `
+                    <a href="${item.url}" class="search-result-item" data-url="${item.url}">
+                        <div class="search-item-icon kelas">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                        </div>
+                        <div class="search-item-info">
+                            <div class="search-item-title">${highlightMatch(escapeHtml(item.judul), query)}</div>
+                            <div class="search-item-desc">${escapeHtml(item.deskripsi)}</div>
+                        </div>
+                        <span class="search-item-badge">Kelas</span>
+                    </a>
+                `;
+            });
+        }
+
+        // 3. Group Mata Pelajaran
+        if (mapel && mapel.length > 0) {
+            html += `<div class="search-group-title">Mata Pelajaran</div>`;
+            mapel.forEach(item => {
+                html += `
+                    <a href="${item.url}" class="search-result-item" data-url="${item.url}">
+                        <div class="search-item-icon mapel">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="search-item-info">
+                            <div class="search-item-title">${highlightMatch(escapeHtml(item.judul), query)}</div>
+                            <div class="search-item-desc">${escapeHtml(item.deskripsi)}</div>
+                        </div>
+                        <span class="search-item-badge">Ganti Mapel</span>
+                    </a>
+                `;
+            });
+        }
+
+        // 4. Group Fitur & Menu
+        if (fitur && fitur.length > 0) {
+            html += `<div class="search-group-title">Fitur & Navigasi Cepat</div>`;
+            fitur.forEach(item => {
+                html += `
+                    <a href="${item.url}" class="search-result-item" data-url="${item.url}">
+                        <div class="search-item-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <div class="search-item-info">
+                            <div class="search-item-title">${highlightMatch(escapeHtml(item.judul), query)}</div>
+                            <div class="search-item-desc">${escapeHtml(item.deskripsi)}</div>
+                        </div>
+                        <span class="search-item-badge">${escapeHtml(item.kategori)}</span>
+                    </a>
+                `;
+            });
+        }
+
+        searchDropdownContent.innerHTML = html;
+        openSearchDropdown();
+        selectedIndex = -1;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.toString().replace(/[&<>"']/g, m => map[m]);
+    }
+
+    async function executeSearch(query) {
+        try {
+            const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            if (!res.ok) throw new Error('Search failed');
+            const data = await res.json();
+            renderSearchResults(data, query);
+        } catch (err) {
+            console.error('Search error:', err);
+        }
+    }
+
+    // Input listener with debounce
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        searchClearBtn.style.display = query.length > 0 ? 'inline-flex' : 'none';
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            executeSearch(query);
+        }, 150);
+    });
+
+    // Focus opens dropdown
+    searchInput.addEventListener('focus', () => {
+        executeSearch(searchInput.value.trim());
+    });
+
+    // Clear button
+    searchClearBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        searchInput.value = '';
+        searchClearBtn.style.display = 'none';
+        executeSearch('');
+        searchInput.focus();
+    });
+
+    // Keyboard navigation (Arrow Up, Down, Enter, Esc)
+    searchInput.addEventListener('keydown', (e) => {
+        const items = searchDropdownContent.querySelectorAll('.search-result-item');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (items.length > 0) {
+                selectedIndex = (selectedIndex + 1) % items.length;
+                updateSelectedItem(items);
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (items.length > 0) {
+                selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+                updateSelectedItem(items);
+            }
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0 && selectedIndex < items.length) {
+                items[selectedIndex].click();
+            } else if (items.length > 0) {
+                items[0].click();
+            }
+        } else if (e.key === 'Escape') {
+            closeSearchDropdown();
+            searchInput.blur();
+        }
+    });
+
+    function updateSelectedItem(items) {
+        items.forEach((item, idx) => {
+            if (idx === selectedIndex) {
+                item.classList.add('is-selected');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('is-selected');
+            }
+        });
+    }
+
+    // Global shortcut Ctrl+K or '/' to focus search bar
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        } else if (e.key === '/' && document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        }
+    });
+
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+        const searchBoxContainer = document.querySelector('.search-box-container');
+        if (searchBoxContainer && !searchBoxContainer.contains(e.target)) {
+            closeSearchDropdown();
+        }
+    });
+
+    // ============================================================
+    // KALENDER AKADEMIK & AGENDA INTERAKTIF
+    // ============================================================
+    const calMonthLabel = document.getElementById('calMonthLabel');
+    const calDaysBody = document.getElementById('calDaysBody');
+    const calPrev = document.getElementById('calPrev');
+    const calNext = document.getElementById('calNext');
+    const calDateInfo = document.getElementById('calDateInfo');
+    const remindersList = document.getElementById('remindersList');
+    const btnAddReminder = document.getElementById('btnAddReminder');
+
+    const MONTH_NAMES = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    let currentYear = 2026;
+    let currentMonth = 10; // 0-indexed: 10 is November
+    let selectedDateStr = null;
+
+    const DEFAULT_REMINDERS = [
+        {
+            id: 'rem_1',
+            date: '2026-11-15',
+            title: 'Input Nilai Tugas PTI 1B',
+            desc: '15 Nov 2026 • Semester Ganjil',
+            type: 'blue',
+            url: "{{ url_for('halaman_penilaian') }}",
+            completed: false
+        },
+        {
+            id: 'rem_2',
+            date: '2026-11-20',
+            title: 'Batas Input Nilai UTS',
+            desc: '20 Nov 2026 • Sisa 5 hari',
+            type: 'orange',
+            url: "{{ url_for('halaman_penilaian') }}",
+            completed: false
+        },
+        {
+            id: 'rem_3',
+            date: '2026-11-25',
+            title: 'Verifikasi Rekap Kelas XI',
+            desc: '25 Nov 2026 • Terjadwal',
+            type: 'green',
+            url: "{{ url_for('rekapitulasi_nilai') }}",
+            completed: false
+        }
+    ];
+
+    function getStoredReminders() {
+        try {
+            const data = localStorage.getItem('grade_master_reminders');
+            if (data) return JSON.parse(data);
+        } catch (e) {}
+        return DEFAULT_REMINDERS;
+    }
+
+    function saveReminders(items) {
+        try {
+            localStorage.setItem('grade_master_reminders', JSON.stringify(items));
+        } catch (e) {}
+    }
+
+    let reminders = getStoredReminders();
+
+    function renderCalendar() {
+        if (!calMonthLabel || !calDaysBody) return;
+        calMonthLabel.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+        calDaysBody.innerHTML = '';
+
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        let startDay = firstDay.getDay(); // 0 is Sunday
+        startDay = startDay === 0 ? 6 : startDay - 1; // Convert to Mon=0 .. Sun=6
+
+        const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const prevMonthTotalDays = new Date(currentYear, currentMonth, 0).getDate();
+
+        const eventDates = {};
+        reminders.forEach(r => {
+            const parts = r.date.split('-');
+            if (parts.length === 3) {
+                const y = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                const d = parseInt(parts[2], 10);
+                if (y === currentYear && m - 1 === currentMonth) {
+                    eventDates[d] = r;
+                }
+            }
+        });
+
+        let currentDayCount = 1;
+        let nextMonthDayCount = 1;
+        const totalRows = Math.ceil((startDay + totalDays) / 7);
+
+        for (let row = 0; row < totalRows; row++) {
+            const tr = document.createElement('tr');
+            for (let col = 0; col < 7; col++) {
+                const td = document.createElement('td');
+                const cellIndex = row * 7 + col;
+
+                if (cellIndex < startDay) {
+                    const prevDate = prevMonthTotalDays - startDay + cellIndex + 1;
+                    td.className = 'dimmed';
+                    td.textContent = prevDate;
+                } else if (currentDayCount <= totalDays) {
+                    const d = currentDayCount;
+                    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const span = document.createElement('span');
+                    span.className = 'cal-day';
+                    span.textContent = d;
+
+                    const isToday = currentYear === 2026 && currentMonth === 10 && d === 15;
+                    const event = eventDates[d];
+
+                    if (isToday) {
+                        span.classList.add('active-blue');
+                        span.title = 'Hari Ini (15 Nov 2026)';
+                    } else if (event) {
+                        span.classList.add('active-coral');
+                        span.title = `${event.title} (${d} ${MONTH_NAMES[currentMonth]})`;
+                    }
+
+                    if (selectedDateStr === dateStr) {
+                        span.classList.add('is-selected');
+                    }
+
+                    span.addEventListener('click', () => {
+                        selectCalendarDate(dateStr, d, event);
+                    });
+
+                    td.appendChild(span);
+                    currentDayCount++;
+                } else {
+                    td.className = 'dimmed';
+                    td.textContent = nextMonthDayCount++;
+                }
+                tr.appendChild(td);
+            }
+            calDaysBody.appendChild(tr);
+        }
+    }
+
+    function selectCalendarDate(dateStr, dayNum, event) {
+        selectedDateStr = dateStr;
+        renderCalendar();
+
+        if (calDateInfo) {
+            calDateInfo.style.display = 'flex';
+            if (event) {
+                calDateInfo.innerHTML = `
+                    <span>📅 <strong>${dayNum} ${MONTH_NAMES[currentMonth]}</strong>: ${escapeHtml(event.title)}</span>
+                    <a href="${event.url}" style="font-weight:700; color:#4865d4; font-size:11px; text-decoration:none;">Buka &gt;</a>
+                `;
+                const reminderCard = document.getElementById(`reminder_${event.id}`);
+                if (reminderCard) {
+                    reminderCard.classList.add('highlight-event');
+                    reminderCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    setTimeout(() => reminderCard.classList.remove('highlight-event'), 2000);
+                }
+            } else {
+                calDateInfo.innerHTML = `
+                    <span>📅 <strong>${dayNum} ${MONTH_NAMES[currentMonth]}</strong>: Tidak ada agenda khusus</span>
+                    <button type="button" style="border:none; background:none; font-size:10.5px; color:#4865d4; font-weight:600; cursor:pointer;" onclick="btnAddReminder.click()">+ Tambah</button>
+                `;
+            }
+        }
+    }
+
+    function renderReminders() {
+        if (!remindersList) return;
+        remindersList.innerHTML = '';
+        if (reminders.length === 0) {
+            remindersList.innerHTML = '<p style="font-size:11px; color:#94a3b8; text-align:center; padding:12px;">Tidak ada agenda tersimpan.</p>';
+            return;
+        }
+
+        reminders.forEach(r => {
+            const item = document.createElement('div');
+            item.className = `reminder-item ${r.completed ? 'is-completed' : ''}`;
+            item.id = `reminder_${r.id}`;
+
+            let iconSvg = '';
+            if (r.type === 'blue') {
+                iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>`;
+            } else if (r.type === 'orange') {
+                iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>`;
+            } else {
+                iconSvg = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>`;
+            }
+
+            item.innerHTML = `
+                <div class="reminder-icon-box ${r.type}">
+                    ${iconSvg}
+                </div>
+                <div class="reminder-text" onclick="window.location.href='${r.url}'" style="cursor:pointer;" title="Buka Halaman Terkait">
+                    <strong>${escapeHtml(r.title)}</strong>
+                    <small>${escapeHtml(r.desc)}</small>
+                </div>
+                <button type="button" class="reminder-check-btn" title="${r.completed ? 'Tandai Belum Selesai' : 'Tandai Selesai'}">
+                    ✓
+                </button>
+            `;
+
+            const checkBtn = item.querySelector('.reminder-check-btn');
+            checkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                r.completed = !r.completed;
+                saveReminders(reminders);
+                renderReminders();
+            });
+
+            remindersList.appendChild(item);
+        });
+    }
+
+    if (calPrev) {
+        calPrev.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar();
+        });
+    }
+
+    if (calNext) {
+        calNext.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar();
+        });
+    }
+
+    if (btnAddReminder) {
+        btnAddReminder.addEventListener('click', () => {
+            const title = prompt('Masukkan nama agenda / pengingat penilaian baru:');
+            if (!title || !title.trim()) return;
+
+            const defaultDate = selectedDateStr || '2026-11-20';
+            const dateInput = prompt('Masukkan tanggal pengingat (format: YYYY-MM-DD):', defaultDate);
+            if (!dateInput || !dateInput.trim()) return;
+
+            const newRem = {
+                id: 'rem_' + Date.now(),
+                date: dateInput.trim(),
+                title: title.trim(),
+                desc: `${dateInput.trim()} • Pengingat Guru`,
+                type: 'blue',
+                url: "{{ url_for('halaman_penilaian') }}",
+                completed: false
+            };
+
+            reminders.push(newRem);
+            saveReminders(reminders);
+            renderReminders();
+            renderCalendar();
+        });
+    }
+
+    renderCalendar();
+    renderReminders();
+</script>
+
+</body>
+</html>

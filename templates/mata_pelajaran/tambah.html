@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Mata Pelajaran | GRADE MASTER</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/penugasan.css') }}">
+</head>
+<body>
+
+<main class="penugasan-container">
+
+    <header class="halaman-header">
+        <h1>Tambah Mata Pelajaran</h1>
+        <p>Tambahkan mata pelajaran yang Anda ajarkan.</p>
+    </header>
+
+    <form method="POST" class="form-penugasan">
+
+        <div class="form-group">
+            <label for="nama_mata_pelajaran">
+                Nama Mata Pelajaran
+            </label>
+
+            <input
+                type="text"
+                id="nama_mata_pelajaran"
+                name="nama_mata_pelajaran"
+                value="{{ nama_mata_pelajaran }}"
+                placeholder="Masukkan nama mata pelajaran"
+                required
+            >
+        </div>
+
+        {% if pesan %}
+            <p class="pesan-error">{{ pesan }}</p>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{{ url_for('daftar_mata_pelajaran') }}"
+               class="btn-batal">
+                Batal
+            </a>
+
+            <button type="submit" class="btn-simpan">
+                Simpan
+            </button>
+        </div>
+
+    </form>
+
+</main>
+
+</body>
+</html>

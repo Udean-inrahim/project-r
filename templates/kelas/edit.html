@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Ubah Kelas</h1>
+            <p>Ubah nama kelas yang Anda kelola.</p>
+        </div>
+
+        <a href="{{ url_for('kelola_kelas') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    <form method="POST" class="form-penugasan">
+
+        <div class="form-group">
+            <label for="nama_kelas">Nama Kelas</label>
+
+            <input
+                type="text"
+                id="nama_kelas"
+                name="nama_kelas"
+                value="{{ kelas.nama_kelas }}"
+                required
+            >
+        </div>
+
+        {% if pesan %}
+            <p class="pesan-error">{{ pesan }}</p>
+        {% endif %}
+
+        <div class="form-actions">
+            <a href="{{ url_for('kelola_kelas') }}" class="btn-batal">
+                Batal
+            </a>
+
+            <button type="submit" class="btn-tambah">
+                Simpan
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Mata Pelajaran dan Kelas | GRADE MASTER</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/penugasan.css') }}">
+</head>
+<body>
+
+    {% with pesan = get_flashed_messages() %}
+        {% if pesan %}
+            <div class="toast-notification">
+                {{ pesan[-1] }}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <main class="penugasan-container halaman-mapel">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Kelola Mata Pelajaran dan Kelas</h1>
+            <p>Kelola mata pelajaran dan kelas yang Anda ajarkan.</p>
+
+            <a href="{{ url_for('tambah_mata_pelajaran') }}"
+            class="btn-tambah tombol-tambah-bawah">
+                + Tambah Mata Pelajaran
+            </a>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    <section class="daftar-penugasan daftar-mapel-panel">
+
+        {% if daftar_mata_pelajaran %}
+
+            {% for item in daftar_mata_pelajaran %}
+                <article class="kartu-penugasan">
+                    <h2>{{ item.nama_mata_pelajaran }}</h2>
+
+                    <p>
+                        Jumlah kelas:
+                        <strong>{{ item.jumlah_kelas }}</strong>
+                    </p>
+
+                    {% if item.status_arsip == 1 %}
+                        <p><strong> status: Diarsipkan</strong></p>
+
+                        <form method="POST"
+                            action="{{ url_for('pulihkan_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
+                            onsubmit="return confirm('Pulihkan mata pelajaran ini?')">
+
+                            <button type="submit" class="btn-tambah">
+                                Pulihkan
+                            </button>
+                        </form>
+
+                        <form method="POST"
+                            action="{{ url_for('hapus_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
+                            onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini secara permanen beserta kelas, periode, dan nilai terkait?')">
+
+                            <button type="submit" class="btn-batal">
+                                Hapus 
+                            </button>
+                        </form>
+
+                    {% else %}
+                        {% if item.sedang_aktif == 1 %}
+                            <p><strong>Status: Aktif</strong></p>
+                        {% else %}
+                            <p><strong>Status: Tidak Aktif</strong></p>
+                        {% endif %}
+
+                        <div class="aksi-mapel">
+                            <a href="{{ url_for('edit_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}" class="teks-pilih">Ubah</a>
+                            <form method="POST" action="{{ url_for('arsip_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}" onsubmit="return confirm('Arsipkan mata pelajaran ini?')">
+                                <button type="submit" class="btn-batal">Arsipkan</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('hapus_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}" onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini secara permanen beserta kelas, periode, dan nilai terkait?')">
+                                <button type="submit" class="btn-batal">Hapus</button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+
+        {% else %}
+
+            <div class="kosong">
+                <h2>Belum Ada Mata Pelajaran</h2>
+                <p>Silakan tambahkan mata pelajaran terlebih dahulu.</p>
+            </div>
+
+        {% endif %}
+
+        <div class="pencarian-mapel">
+            <input
+                type="text"
+                id="cariMataPelajaran"
+                placeholder="Cari mata pelajaran..."
+                autocomplete="off"
+            >
+        </div>
+
+    </section>
+    </main>
+<script>
+    const inputCari = document.getElementById("cariMataPelajaran");
+    const daftarKartu = document.querySelectorAll(".kartu-penugasan");
+
+    inputCari.addEventListener("input", function () {
+        const kataKunci = this.value.toLowerCase();
+
+        daftarKartu.forEach(function (kartu) {
+            const namaMapel = kartu.querySelector("h2").textContent.toLowerCase();
+
+            kartu.style.display = namaMapel.includes(kataKunci)
+                ? ""
+                : "none";
+        });
+    });
+</script>
+
+</body>
+</html>

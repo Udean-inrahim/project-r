@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>GRADE MASTER</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/penugasan.css') }}">
+</head>
+
+<body>
+
+    {% with pesan = get_flashed_messages() %}
+        {% if pesan %}
+            <div class="toast-notification" id="toastNotification">
+                <span>{{ pesan[-1] }}</span>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="container">
+        {% block content %}
+
+        {% endblock %}
+    </main>
+
+</body>
+</html>

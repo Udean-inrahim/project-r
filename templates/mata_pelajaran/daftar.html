@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih Mata Pelajaran | GRADE MASTER</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/penugasan.css') }}">
+</head>
+<body>
+
+<main class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Pilih Mata Pelajaran</h1>
+            <p>
+                Pilih mata pelajaran yang ingin Anda gunakan
+                untuk mengelola kelas dan penilaian.
+            </p>
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn-batal">
+            Kembali
+        </a>
+    </header>
+
+    {% if daftar_mata_pelajaran %}
+
+        <div class="pencarian-mapel">
+            <input
+                type="text"
+                id="cariMataPelajaran"
+                placeholder="Cari mata pelajaran..."
+                autocomplete="off"
+            >
+        </div>
+
+        <section class="daftar-penugasan">
+            {% for item in daftar_mata_pelajaran %}
+                <a href="{{ url_for('pilih_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
+                class="kartu-penugasan"
+                {% if item.id_mata_pelajaran != id_mata_pelajaran_aktif %}
+                    onclick="return confirm('Yakin ingin mengganti mata pelajaran?')"
+                {% endif %}>
+
+                    <h2>{{ item.nama_mata_pelajaran }}</h2>
+
+                    {% if item.id_mata_pelajaran == id_mata_pelajaran_aktif %}
+
+                        <span class="label-aktif">
+                            ✓ Sedang Digunakan
+                        </span>
+
+                    {% else %}
+
+                        <span class="teks-pilih">
+                            Pilih Mata Pelajaran →
+                        </span>
+
+                    {% endif %}
+
+                </a>
+            {% endfor %}
+        </section>
+
+    {% else %}
+
+        <div class="kosong">
+            <h2>Belum Ada Mata Pelajaran</h2>
+            <p>
+                Silakan tambahkan mata pelajaran melalui
+                menu Kelola Mata Pelajaran.
+            </p>
+
+            <a href="{{ url_for('daftar_mata_pelajaran') }}"
+               class="btn-tambah">
+                Kelola Mata Pelajaran
+            </a>
+        </div>
+
+    {% endif %}
+
+</main>
+
+<script>
+    const inputCari = document.getElementById("cariMataPelajaran");
+    const daftarKartu = document.querySelectorAll(".kartu-penugasan");
+
+    inputCari.addEventListener("input", function () {
+        const kataKunci = inputCari.value.trim().toLowerCase();
+
+        daftarKartu.forEach(function (kartu) {
+            const namaMapel = kartu.querySelector("h2").textContent
+                .trim()
+                .toLowerCase();
+
+            kartu.style.display = namaMapel.includes(kataKunci)
+                ? ""
+                : "none";
+        });
+    });
+</script>
+
+</body>
+</html>
