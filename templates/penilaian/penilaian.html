@@ -187,17 +187,23 @@
                         <thead>
                             <tr>
                                 <th>No. Absen</th>
-                                <th>Nama Siswa</th>
+                                <th style="text-align: left; padding-left: 14px;">Nama Siswa</th>
 
                                 {% if pengaturan.metode_tugas == 'satu_per_satu' %}
                                     {% for tugas in daftar_tugas %}
                                         <th>{{ tugas.nama_tugas }}</th>
                                     {% endfor %}
+                                    <th>Rata-rata Tugas</th>
                                 {% else %}
                                     <th>Rata-rata Tugas</th>
                                 {% endif %}
 
-                                <th>Rata-rata</th>
+                                <th>UTS</th>
+                                <th>UAS</th>
+                                <th>Kehadiran</th>
+                                <th>Nilai Akhir</th>
+                                <th>Predikat</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
 
@@ -209,7 +215,7 @@
 
                                 <tr data-roster="{{ id_roster }}">
                                     <td>{{ siswa.no_absen }}</td>
-                                    <td>{{ siswa.nama_siswa }}</td>
+                                    <td style="font-weight: 500; text-align: left; padding-left: 14px;">{{ siswa.nama_siswa }}</td>
 
                                     {% if pengaturan.metode_tugas == 'satu_per_satu' %}
                                         {% for tugas in daftar_tugas %}
@@ -230,12 +236,24 @@
                                                 >
                                             </td>
                                         {% endfor %}
+
+                                        <!-- Kolom Rata-rata Tugas -->
+                                        <td>
+                                            <span class="col-avg {% if hasil and hasil.nilai_tugas is not none %}highlight-blue{% endif %}" id="avg_{{ id_roster }}">
+                                                {% if hasil and hasil.nilai_tugas is not none %}
+                                                    {{ "%.2f"|format(hasil.nilai_tugas) }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </span>
+                                        </td>
                                     {% else %}
+                                        <!-- Kolom Rata-rata Tugas (Langsung Rata-rata) -->
                                         {% set val_rata = nilai_rata_rata.get(id_roster) %}
                                         <td>
                                             <input
                                                 type="number"
-                                                class="input-cell input-nilai-tugas"
+                                                class="input-cell input-nilai-tugas input-tugas-rata"
                                                 data-roster="{{ id_roster }}"
                                                 name="rata_rata_{{ id_roster }}"
                                                 min="0"
@@ -249,24 +267,95 @@
                                         </td>
                                     {% endif %}
 
+                                    <!-- Kolom UTS -->
                                     <td>
-                                        <span class="col-avg {% if hasil and hasil.nilai_tugas is not none %}highlight-blue{% endif %}" id="avg_{{ id_roster }}">
-                                            {% if hasil and hasil.nilai_tugas is not none %}
-                                                {{ "%.2f"|format(hasil.nilai_tugas) }}
+                                        <input
+                                            type="number"
+                                            class="input-cell input-komponen input-uts"
+                                            data-roster="{{ id_roster }}"
+                                            name="uts_{{ id_roster }}"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ '%.1f'|format(komponen.nilai_uts) if komponen and komponen.nilai_uts is not none else '' }}"
+                                            placeholder="-"
+                                            autocomplete="off"
+                                            {% if periode.status_terkunci == 1 %}disabled{% endif %}
+                                        >
+                                    </td>
+
+                                    <!-- Kolom UAS -->
+                                    <td>
+                                        <input
+                                            type="number"
+                                            class="input-cell input-komponen input-uas"
+                                            data-roster="{{ id_roster }}"
+                                            name="uas_{{ id_roster }}"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ '%.1f'|format(komponen.nilai_uas) if komponen and komponen.nilai_uas is not none else '' }}"
+                                            placeholder="-"
+                                            autocomplete="off"
+                                            {% if periode.status_terkunci == 1 %}disabled{% endif %}
+                                        >
+                                    </td>
+
+                                    <!-- Kolom Kehadiran -->
+                                    <td>
+                                        <input
+                                            type="number"
+                                            class="input-cell input-komponen input-kehadiran"
+                                            data-roster="{{ id_roster }}"
+                                            name="kehadiran_{{ id_roster }}"
+                                            min="0"
+                                            max="100"
+                                            step="0.01"
+                                            value="{{ '%.1f'|format(komponen.nilai_kehadiran) if komponen and komponen.nilai_kehadiran is not none else '' }}"
+                                            placeholder="-"
+                                            autocomplete="off"
+                                            {% if periode.status_terkunci == 1 %}disabled{% endif %}
+                                        >
+                                    </td>
+
+                                    <!-- Kolom Nilai Akhir -->
+                                    <td>
+                                        <span class="col-akhir" id="akhir_{{ id_roster }}">
+                                            {% if hasil and hasil.nilai_akhir is not none %}
+                                                {{ "%.2f"|format(hasil.nilai_akhir) }}
                                             {% else %}
                                                 -
                                             {% endif %}
                                         </span>
                                     </td>
 
-                                    <!-- Preserve UTS, UAS, Kehadiran in database -->
-                                    <input type="hidden" name="uts_{{ id_roster }}" value="{{ komponen.nilai_uts if komponen and komponen.nilai_uts is not none else '' }}">
-                                    <input type="hidden" name="uas_{{ id_roster }}" value="{{ komponen.nilai_uas if komponen and komponen.nilai_uas is not none else '' }}">
-                                    <input type="hidden" name="kehadiran_{{ id_roster }}" value="{{ komponen.nilai_kehadiran if komponen and komponen.nilai_kehadiran is not none else '' }}">
+                                    <!-- Kolom Predikat -->
+                                    <td>
+                                        <span class="col-grade" id="grade_{{ id_roster }}">
+                                            {% if hasil and hasil.grade %}
+                                                <span class="badge-grade grade-{{ hasil.grade|lower }}">{{ hasil.grade }}</span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </span>
+                                    </td>
+
+                                    <!-- Kolom Status Ketuntasan -->
+                                    <td>
+                                        <span class="col-status" id="status_{{ id_roster }}">
+                                            {% if hasil and hasil.status_kkm %}
+                                                <span class="badge-status {% if hasil.status_kkm == 'Tuntas' %}status-tuntas{% else %}status-belum{% endif %}">
+                                                    {{ hasil.status_kkm }}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </span>
+                                    </td>
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="{{ (daftar_tugas|length + 3) if pengaturan.metode_tugas == 'satu_per_satu' else 4 }}" style="padding: 32px; color: #94a3b8; text-align: center;">
+                                    <td colspan="{{ (daftar_tugas|length + 9) if pengaturan.metode_tugas == 'satu_per_satu' else 9 }}" style="padding: 32px; color: #94a3b8; text-align: center;">
                                         Belum ada siswa terdaftar di kelas ini. Buka menu Data Siswa untuk menambahkan siswa.
                                     </td>
                                 </tr>
@@ -463,43 +552,115 @@
         });
     }
 
-    // Real-Time Client-Side Average Calculation
-    function updateRowAverage(rosterId) {
+    // Real-Time Calculation Configuration
+    const BOBOT = {
+        tugas: {{ pengaturan.bobot_tugas or 0 }},
+        uts: {{ pengaturan.bobot_uts or 0 }},
+        uas: {{ pengaturan.bobot_uas or 0 }},
+        kehadiran: {{ pengaturan.bobot_kehadiran or 0 }},
+        batas_a: {{ pengaturan.batas_a or 85 }},
+        batas_b: {{ pengaturan.batas_b or 75 }},
+        batas_c: {{ pengaturan.batas_c or 65 }},
+        batas_d: {{ pengaturan.batas_d or 50 }},
+        kkm: {{ pengaturan.kkm or 75 }},
+        metode: "{{ pengaturan.metode_tugas }}"
+    };
+
+    function updateRowCalculation(rosterId) {
         const row = document.querySelector(`tr[data-roster="${rosterId}"]`);
         if (!row) return;
 
-        const inputs = row.querySelectorAll('.input-nilai-tugas');
-        let total = 0;
-        let count = 0;
+        let nilaiTugasAkhir = null;
 
-        inputs.forEach(input => {
-            const val = parseFloat(input.value);
-            if (!isNaN(val) && val >= 0 && val <= 100) {
-                total += val;
-                count++;
-            }
-        });
+        if (BOBOT.metode === 'satu_per_satu') {
+            const tugasInputs = row.querySelectorAll('.input-nilai-tugas');
+            let totalTugas = 0;
+            let countTugas = 0;
+            tugasInputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val) && val >= 0 && val <= 100) {
+                    totalTugas += val;
+                    countTugas++;
+                }
+            });
 
-        const avgSpan = document.getElementById(`avg_${rosterId}`);
-        if (avgSpan) {
-            if (count > 0) {
-                const avg = total / count;
-                avgSpan.textContent = avg.toFixed(2);
-                avgSpan.classList.add('highlight-blue');
+            const avgSpan = document.getElementById(`avg_${rosterId}`);
+            if (countTugas > 0) {
+                nilaiTugasAkhir = totalTugas / countTugas;
+                if (avgSpan) {
+                    avgSpan.textContent = nilaiTugasAkhir.toFixed(2);
+                    avgSpan.classList.add('highlight-blue');
+                }
             } else {
-                avgSpan.textContent = '-';
-                avgSpan.classList.remove('highlight-blue');
+                if (avgSpan) {
+                    avgSpan.textContent = '-';
+                    avgSpan.classList.remove('highlight-blue');
+                }
             }
+        } else {
+            const rataInput = row.querySelector('.input-tugas-rata');
+            if (rataInput) {
+                const val = parseFloat(rataInput.value);
+                if (!isNaN(val) && val >= 0 && val <= 100) {
+                    nilaiTugasAkhir = val;
+                }
+            }
+        }
+
+        const utsInput = row.querySelector('.input-uts');
+        const uasInput = row.querySelector('.input-uas');
+        const kehadiranInput = row.querySelector('.input-kehadiran');
+
+        const valUTS = utsInput ? parseFloat(utsInput.value) : NaN;
+        const valUAS = uasInput ? parseFloat(uasInput.value) : NaN;
+        const valKehadiran = kehadiranInput ? parseFloat(kehadiranInput.value) : NaN;
+
+        const utsValid = !isNaN(valUTS) && valUTS >= 0 && valUTS <= 100;
+        const uasValid = !isNaN(valUAS) && valUAS >= 0 && valUAS <= 100;
+        const kehValid = !isNaN(valKehadiran) && valKehadiran >= 0 && valKehadiran <= 100;
+
+        const akhirSpan = document.getElementById(`akhir_${rosterId}`);
+        const gradeSpan = document.getElementById(`grade_${rosterId}`);
+        const statusSpan = document.getElementById(`status_${rosterId}`);
+
+        if (nilaiTugasAkhir !== null && utsValid && uasValid && kehValid) {
+            const nilaiAkhir = (
+                nilaiTugasAkhir * BOBOT.tugas +
+                valUTS * BOBOT.uts +
+                valUAS * BOBOT.uas +
+                valKehadiran * BOBOT.kehadiran
+            ) / 100;
+
+            let grade = 'E';
+            if (nilaiAkhir >= BOBOT.batas_a) grade = 'A';
+            else if (nilaiAkhir >= BOBOT.batas_b) grade = 'B';
+            else if (nilaiAkhir >= BOBOT.batas_c) grade = 'C';
+            else if (nilaiAkhir >= BOBOT.batas_d) grade = 'D';
+
+            const status = (nilaiAkhir >= BOBOT.kkm) ? 'Tuntas' : 'Belum Tuntas';
+
+            if (akhirSpan) akhirSpan.textContent = nilaiAkhir.toFixed(2);
+            if (gradeSpan) gradeSpan.innerHTML = `<span class="badge-grade grade-${grade.toLowerCase()}">${grade}</span>`;
+            if (statusSpan) {
+                const badgeClass = status === 'Tuntas' ? 'status-tuntas' : 'status-belum';
+                statusSpan.innerHTML = `<span class="badge-status ${badgeClass}">${status}</span>`;
+            }
+        } else {
+            if (akhirSpan) akhirSpan.textContent = '-';
+            if (gradeSpan) gradeSpan.textContent = '-';
+            if (statusSpan) statusSpan.textContent = '-';
         }
     }
 
-    document.querySelectorAll('.input-nilai-tugas').forEach(input => {
+    // Attach real-time listener to all input cells
+    document.querySelectorAll('.input-cell').forEach(input => {
         input.addEventListener('input', () => {
             const rosterId = input.getAttribute('data-roster');
             if (rosterId) {
-                updateRowAverage(rosterId);
+                updateRowCalculation(rosterId);
             }
         });
+    });
     });
 
     // Reset Nilai Modal

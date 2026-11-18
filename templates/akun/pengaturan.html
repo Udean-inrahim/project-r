@@ -1,7 +1,7 @@
-{% extends "layout.html" %}
-
-{% block title %}Pengaturan Akun | GRADE MASTER{% endblock %}
-{% block breadcrumb %}Pengaturan Akun{% endblock %}
+{% extends "layout.html" %}
+
+{% block title %}Profil Guru | GRADE MASTER{% endblock %}
+{% block breadcrumb %}Profil Guru{% endblock %}
 
 {% block content %}
 
@@ -9,8 +9,8 @@
 
     <header class="halaman-header">
         <div>
-            <h1>Pengaturan Akun</h1>
-            <p>Kelola identitas akun GRADE MASTER Anda.</p>
+            <h1>Profil Guru</h1>
+            <p>Kelola identitas dan nama lengkap akun guru Anda.</p>
         </div>
 
         <a href="{{ url_for('dashboard') }}" class="btn-batal">
@@ -22,13 +22,13 @@
 
         <article class="kartu-penugasan">
 
-            <h2>Profil Guru</h2>
+            <h2>Informasi Profil</h2>
             <p>Ubah nama yang ditampilkan pada akun Anda.</p>
 
             <form method="POST">
 
                 <div class="form-group">
-                    <label for="nama_lengkap">Nama Guru</label>
+                    <label for="nama_lengkap">Nama Lengkap Guru</label>
 
                     <input
                         type="text"
@@ -44,7 +44,7 @@
                 {% endif %}
 
                 <button type="submit" class="btn-tambah">
-                    Simpan Nama
+                    Simpan Perubahan
                 </button>
 
             </form>
@@ -53,12 +53,12 @@
 
         <article class="kartu-penugasan">
 
-            <h2>Keamanan Akun</h2>
-            <p>Kelola nama pengguna dan kata sandi akun Anda.</p>
+            <h2>Keamanan &amp; Kata Sandi</h2>
+            <p>Kelola nama pengguna dan kata sandi untuk masuk ke akun Anda.</p>
 
             <a href="{{ url_for('keamanan_akun') }}"
                class="teks-pilih">
-                Ubah Nama Pengguna dan Kata Sandi
+                Ubah Username &amp; Password &rarr;
             </a>
 
         </article>

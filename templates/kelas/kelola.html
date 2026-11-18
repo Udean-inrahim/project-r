@@ -1,6 +1,9 @@
-{% extends "layout.html" %}
-
-{% block title %}Kelola Kelas | GRADE MASTER{% endblock %}
+{% extends "layout.html" %}
+
+
+
+{% block title %}Kelola Kelas | GRADE MASTER{% endblock %}
+
 {% block breadcrumb %}Kelola Kelas{% endblock %}
 
 {% block content %}
@@ -133,23 +136,25 @@
 
     </section>
 
-    <section class="kelas-arsip">
+    <section class="daftar-penugasan kelas-arsip" style="margin-top: 24px;">
 
         <h2>Kelas yang Diarsipkan</h2>
+        <p style="color: #64748b; font-size: 13px; margin-bottom: 18px;">Daftar kelas yang dinonaktifkan sementara dari penugasan.</p>
 
         {% if kelas_arsip %}
 
+            <div class="grid-kelas-arsip" style="display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
             {% for kelas in kelas_arsip %}
 
-                <article class="kartu-penugasan">
+                <article class="kartu-penugasan kartu-kelas-item" style="margin: 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px;">
 
-                    <div class="kelas-header">
-                        <h3>{{ kelas.nama_kelas }}</h3>
+                    <div class="kelas-header" style="margin-bottom: 12px;">
+                        <h3 style="font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 4px;">{{ kelas.nama_kelas }}</h3>
 
                         {% if kelas.id_kelas == id_kelas_aktif %}
                             <span class="status-kelas aktif">Kelas Aktif</span>
                         {% else %}
-                            <span class="status-kelas tidak-aktif">Tidak Aktif</span>
+                            <span class="status-kelas tidak-aktif">Diarsipkan</span>
                         {% endif %}
                     </div>
 
@@ -158,7 +163,7 @@
                         <form method="POST"
                               action="{{ url_for('pulihkan_kelas', id_kelas=kelas.id_kelas) }}">
 
-                            <button type="submit" class="btn-tambah">
+                            <button type="submit" class="btn-tambah" style="padding: 7px 16px; font-size: 12.5px;">
                                 Pulihkan
                             </button>
 
@@ -168,7 +173,7 @@
                             action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
                             onsubmit="return confirm('PERINGATAN! Kelas ini beserta seluruh periode akademik, siswa, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
 
-                            <button type="submit" class="btn-batal">
+                            <button type="submit" class="btn-batal" style="padding: 7px 16px; font-size: 12.5px;">
                                 Hapus
                             </button>
 
@@ -179,10 +184,11 @@
                 </article>
 
             {% endfor %}
+            </div>
 
         {% else %}
 
-            <p>Belum ada kelas yang diarsipkan.</p>
+            <p style="color: #94a3b8; font-size: 13px; margin: 8px 0;">Belum ada kelas yang diarsipkan.</p>
 
         {% endif %}
 

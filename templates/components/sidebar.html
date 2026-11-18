@@ -116,7 +116,7 @@
 
             <div class="nav-section-title">AKUN</div>
 
-            <a href="{{ url_for('pengaturan_akun') }}" class="nav-link {% if current_page in ['profil_guru'] %}active{% endif %}">
+            <a href="{{ url_for('pengaturan_akun') }}" class="nav-link {% if current_page in ['pengaturan_akun', 'profil_guru'] %}active{% endif %}">
                 <span class="nav-icon">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -126,7 +126,7 @@
                 <span>Profil Guru</span>
             </a>
 
-            <a href="{{ url_for('pengaturan_akun') }}" class="nav-link {% if current_page in ['pengaturan_akun', 'keamanan_akun'] %}active{% endif %}">
+            <a href="{{ url_for('keamanan_akun') }}" class="nav-link {% if current_page in ['keamanan_akun'] %}active{% endif %}">
                 <span class="nav-icon">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"></circle>
