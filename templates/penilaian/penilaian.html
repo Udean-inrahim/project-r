@@ -34,10 +34,21 @@
     <main class="main-content">
         <!-- Topbar Breadcrumb & Notifications -->
         <header class="main-topbar">
-            <div class="breadcrumb">
-                <a href="{{ url_for('pengaturan_bobot') }}" class="breadcrumb-parent">Pengaturan Penilaian</a>
-                <span class="breadcrumb-separator">&rsaquo;</span>
-                <span class="breadcrumb-current">Jumlah Tugas</span>
+            <div class="topbar-left">
+                <button type="button" class="mobile-menu-btn" onclick="document.body.classList.toggle('sidebar-mobile-open')" aria-label="Buka Menu" title="Buka Menu">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                    <span class="mobile-menu-label">Menu</span>
+                </button>
+
+                <div class="breadcrumb">
+                    <a href="{{ url_for('pengaturan_bobot') }}" class="breadcrumb-parent">Pengaturan Penilaian</a>
+                    <span class="breadcrumb-separator">&rsaquo;</span>
+                    <span class="breadcrumb-current">Jumlah Tugas</span>
+                </div>
             </div>
 
             <div class="topbar-actions">

@@ -1,18 +1,28 @@
 {% set current_page = active_page or request.endpoint %}
-<aside class="sidebar">
+<aside class="sidebar" id="appSidebar">
     <div>
         <!-- Brand Logo -->
         <div class="sidebar-logo">
-            <div class="sidebar-logo-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            <div class="sidebar-logo-brand">
+                <div class="sidebar-logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <div class="sidebar-logo-text">
+                    <span class="logo-main">GRADE</span>
+                    <span class="logo-sub">MASTER</span>
+                </div>
+            </div>
+
+            <!-- Mobile Close Button (Visible on mobile screens) -->
+            <button type="button" class="sidebar-mobile-close" id="sidebarMobileClose" aria-label="Tutup Menu">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-            </div>
-            <div class="sidebar-logo-text">
-                <span class="logo-main">GRADE</span>
-                <span class="logo-sub">MASTER</span>
-            </div>
+            </button>
         </div>
 
         <!-- Navigation Links -->
@@ -179,3 +189,21 @@
         </div>
     </div>
 </aside>
+
+<!-- Mobile Drawer Backdrop -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<script>
+    (function() {
+        function closeDrawer() {
+            document.body.classList.remove('sidebar-mobile-open');
+        }
+        const closeBtn = document.getElementById('sidebarMobileClose');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+        if (backdrop) backdrop.addEventListener('click', closeDrawer);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDrawer();
+        });
+    })();
+</script>

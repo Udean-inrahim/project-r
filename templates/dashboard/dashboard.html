@@ -20,23 +20,24 @@
          COLUMN 2: CENTER MAIN CONTENT AREA (EXPANDED)
          ============================================================ -->
     <main class="main-area">
-        <!-- Navigasi mobile: sidebar disembunyikan di layar kecil -->
-        <nav class="mobile-nav" aria-label="Navigasi utama">
-            <details class="mobile-nav-menu">
-                <summary class="mobile-nav-toggle">Menu</summary>
-                <ul class="mobile-nav-list">
-                    <li><a href="{{ url_for('dashboard') }}" class="active">Dasbor</a></li>
-                    <li><a href="{{ url_for('daftar_siswa') }}">Data Siswa</a></li>
-                    <li><a href="{{ url_for('pengaturan_bobot', sumber='dashboard') }}">Pengaturan Bobot</a></li>
-                    <li><a href="{{ url_for('halaman_penilaian') }}">Perhitungan Nilai</a></li>
-                    <li><a href="{{ url_for('rekapitulasi_nilai') }}">Rekapitulasi Nilai</a></li>
-                    <li><a href="{{ url_for('daftar_mata_pelajaran') }}">Kelola Mata Pelajaran</a></li>
-                    <li><a href="{{ url_for('halaman_pilih_mata_pelajaran') }}">Ganti Mata Pelajaran</a></li>
-                    <li><a href="{{ url_for('pengaturan_akun') }}">Pengaturan Akun</a></li>
-                    <li><button type="button" class="mobile-nav-keluar" onclick="tampilkanKonfirmasiKeluar()">Keluar Akun</button></li>
-                </ul>
-            </details>
-        </nav>
+        <!-- Modern Mobile Header: opens unified dark navy drawer -->
+        <div class="mobile-topbar-header">
+            <button type="button" class="mobile-menu-btn" onclick="document.body.classList.toggle('sidebar-mobile-open')" aria-label="Buka Menu" title="Buka Menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <span class="mobile-menu-label">Menu</span>
+            </button>
+            <div class="mobile-brand-pill">
+                <span class="mobile-brand-main">GRADE</span>
+                <span class="mobile-brand-sub">MASTER</span>
+            </div>
+            <div class="mobile-header-avatar" title="{{ nama_guru or 'Guru' }}">
+                {{ (nama_guru or 'R')[0]|upper }}
+            </div>
+        </div>
 
         <!-- Top Search Bar & Date -->
         <header class="topbar">
