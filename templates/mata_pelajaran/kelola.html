@@ -23,10 +23,17 @@
         </a>
     </header>
 
-    <section class="daftar-penugasan daftar-mapel-panel">
+    {% if daftar_mata_pelajaran %}
+        <div class="pencarian-mapel">
+            <input
+                type="text"
+                id="cariMataPelajaran"
+                placeholder="Cari mata pelajaran..."
+                autocomplete="off"
+            >
+        </div>
 
-        {% if daftar_mata_pelajaran %}
-
+        <section class="daftar-penugasan daftar-mapel-panel">
             {% for item in daftar_mata_pelajaran %}
                 <article class="kartu-penugasan">
                     <h2>{{ item.nama_mata_pelajaran }}</h2>
@@ -78,26 +85,16 @@
                     {% endif %}
                 </article>
             {% endfor %}
+        </section>
 
-        {% else %}
+    {% else %}
 
-            <div class="kosong">
-                <h2>Belum Ada Mata Pelajaran</h2>
-                <p>Silakan tambahkan mata pelajaran terlebih dahulu.</p>
-            </div>
-
-        {% endif %}
-
-        <div class="pencarian-mapel">
-            <input
-                type="text"
-                id="cariMataPelajaran"
-                placeholder="Cari mata pelajaran..."
-                autocomplete="off"
-            >
+        <div class="kosong">
+            <h2>Belum Ada Mata Pelajaran</h2>
+            <p>Silakan tambahkan mata pelajaran terlebih dahulu.</p>
         </div>
 
-    </section>
+    {% endif %}
 </div>
 
 <script>

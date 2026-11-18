@@ -329,20 +329,6 @@ button {
     color: var(--sidebar-text);
 }
 
-.sidebar-collapse-btn {
-    align-self: center;
-    color: var(--sidebar-section-title);
-    font-size: 14px;
-    font-weight: bold;
-    padding: 4px;
-    margin-top: 2px;
-    transition: color 0.15s ease;
-}
-
-.sidebar-collapse-btn:hover {
-    color: #ffffff;
-}
-
 /* ============================================================
    MAIN CONTENT AREA
    ============================================================ */

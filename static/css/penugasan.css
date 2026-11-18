@@ -362,7 +362,7 @@ th, td { padding: 11px 12px; border-bottom: 1px solid #e8edf3; }
 .pencarian-mapel {
     width: 100%;
     max-width: 420px;
-    margin: 25px 0;
+    margin: 20px 0 16px;
 }
 
 .pencarian-mapel input {
