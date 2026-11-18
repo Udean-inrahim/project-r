@@ -777,3 +777,141 @@ th, td { padding: 11px 12px; border-bottom: 1px solid #e8edf3; }
         min-height: 44px;
     }
 }
+
+
+/* ============================================================
+   INTEGRATION WITH UNIFIED MODERN SIDEBAR & LAYOUT
+   ============================================================ */
+.main-content .penugasan-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.main-content .halaman-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.main-content .halaman-header h1 {
+    color: #1e293b;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.main-content .halaman-header p {
+    color: #64748b;
+    font-size: 13.5px;
+}
+
+.main-content .kartu-penugasan,
+.main-content .tambah-kelas,
+.main-content .daftar-penugasan,
+.main-content .form-pengaturan-bobot > .tambah-kelas,
+.main-content .tambah-siswa-panel,
+.main-content .info-kelas-panel,
+.main-content .pengaturan-penilaian-panel,
+.main-content .periode-bobot-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.main-content .btn-tambah,
+.main-content .btn-simpan,
+.main-content .simpan-bobot-btn {
+    background: #1d68f2;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 22px;
+    transition: all 0.15s ease;
+}
+
+.main-content .btn-tambah:hover,
+.main-content .btn-simpan:hover,
+.main-content .simpan-bobot-btn:hover {
+    background: #1555cb;
+    transform: translateY(-1px);
+}
+
+.main-content .btn-batal {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 9px 18px;
+    transition: all 0.15s ease;
+}
+
+.main-content .btn-batal:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.main-content .tabel-responsive {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow-x: auto;
+}
+
+.main-content th {
+    background: #f8fafc;
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.main-content td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 13px;
+    color: #334155;
+}
+
+.main-content .rekap-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.main-content .rekap-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px;
+    text-align: center;
+}
+
+.main-content .rekap-card h3 {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.main-content .rekap-card p {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1d68f2;
+}
+
+.main-content .rekap-card small {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}

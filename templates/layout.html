@@ -4,27 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>GRADE MASTER</title>
+    <title>{% block title %}GRADE MASTER{% endblock %}</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/penugasan.css') }}">
+    <!-- Modern App Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pengaturan_tugas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/penugasan.css') }}">
 </head>
-
 <body>
 
+    <!-- Toast Notification -->
     {% with pesan = get_flashed_messages() %}
         {% if pesan %}
-            <div class="toast-notification" id="toastNotification">
-                <span>{{ pesan[-1] }}</span>
+            <div class="toast-container" id="toastContainer">
+                <div class="toast">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>{{ pesan[-1] }}</span>
+                </div>
             </div>
         {% endif %}
     {% endwith %}
 
-    <main class="container">
-        {% block content %}
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        {% include "components/sidebar.html" %}
 
-        {% endblock %}
-    </main>
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Topbar with Breadcrumb & Notification -->
+            <header class="main-topbar">
+                <div class="breadcrumb">
+                    <a href="{{ url_for('dashboard') }}" class="breadcrumb-parent">Grade Master</a>
+                    <span class="breadcrumb-separator">&rsaquo;</span>
+                    <span class="breadcrumb-current">{% block breadcrumb %}Menu{% endblock %}</span>
+                </div>
 
+                <div class="topbar-actions">
+                    <button type="button" class="notification-bell-btn" title="Notifikasi">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span class="notification-badge">2</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Body Content -->
+            {% block content %}
+            {% endblock %}
+
+            <!-- Page Footer -->
+            <footer class="page-footer">
+                &copy; 2025 Grade Master. All rights reserved.
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Auto dismiss toast after 4 seconds
+        const toast = document.getElementById('toastContainer');
+        if (toast) {
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -15px)';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+    </script>
 </body>
 </html>

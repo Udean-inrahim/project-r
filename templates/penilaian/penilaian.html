@@ -1,252 +1,593 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Jumlah Tugas | GRADE MASTER</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pengaturan_tugas.css') }}">
+</head>
+<body>
 
-{% block content %}
-<div class="penugasan-container halaman-nilai">
-
-    <header class="halaman-header">
-        <div>
-            <h1>Perhitungan Nilai</h1>
-            <p>Kelola dan hitung nilai akademik siswa.</p>
+<!-- Toast Flash Notification -->
+{% with pesan = get_flashed_messages() %}
+    {% if pesan %}
+        <div class="toast-container" id="toastContainer">
+            <div class="toast">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>{{ pesan[-1] }}</span>
+            </div>
         </div>
-
-        <a href="{{ url_for('dashboard') }}" class="btn-batal">
-            Kembali 
-        </a>
-    </header>
-
-    <section class="tambah-kelas">
-        <h3>Periode Akademik</h3>
-        <p>{{ periode.tahun_ajaran }} - {{ periode.semester }}</p>
-    </section>
-
-    {% if periode.status_terkunci == 0 %}
-
-    <section class="tambah-kelas">
-        <h2>Metode Pengisian Nilai Tugas</h2>
-        <p>Pilih cara memasukkan nilai tugas siswa.</p>
-
-        <form method="POST">
-            <input type="hidden" name="aksi" value="simpan_metode">
-
-            <label>Metode Pengisian Tugas</label>
-
-            <select name="metode_tugas" required>
-                <option value="satu_per_satu"
-                    {% if pengaturan.metode_tugas == 'satu_per_satu' %}selected{% endif %}>
-                    Satu per Satu
-                </option>
-
-                <option value="langsung_rata_rata"
-                    {% if pengaturan.metode_tugas == 'langsung_rata_rata' %}selected{% endif %}>
-                    Langsung Rata-rata
-                </option>
-            </select>
-
-            <button type="submit" class="btn-tambah">
-                Simpan Metode
-            </button>
-        </form>
-    </section>
-
     {% endif %}
+{% endwith %}
 
-    {% if pengaturan.metode_tugas == 'satu_per_satu' %}
+<div class="app-layout">
+    <!-- ============================================================
+         SIDEBAR (Dark Navy Navigation)
+         ============================================================ -->
+    {% include "components/sidebar.html" %}
 
-    <section class="tambah-kelas">
-        <h2>Pengaturan Jumlah Tugas</h2>
-        <p>
-            Tentukan jumlah tugas yang akan dinilai.
-            Jumlah dapat dikurangi jika tugas yang dihapus belum memiliki nilai.
-        </p>
-
-        {% if periode.status_terkunci == 0 %}
-        <form method="POST">
-            <input type="hidden" name="aksi" value="atur_jumlah_tugas">
-
-            <label for="jumlah_tugas">Jumlah Tugas</label>
-
-            <input
-                type="number"
-                id="jumlah_tugas"
-                name="jumlah_tugas"
-                min="1"
-                max="100"
-                value="{{ daftar_tugas|length }}"
-                required
-            >
-
-            <button type="submit" class="btn-tambah">
-                Simpan Jumlah Tugas
-            </button>
-        </form>
-        {% else %}
-        <p>Jumlah tugas: {{ daftar_tugas|length }}</p>
-        {% endif %}
-    </section>
-
-    {% else %}
-
-    <section class="tambah-kelas">
-        <h2>Metode Langsung Rata-rata</h2>
-        <p>
-            Guru cukup memasukkan satu nilai rata-rata tugas
-            untuk setiap siswa. Tidak perlu membuat kolom tugas satu per satu.
-        </p>
-    </section>
-
-    {% endif %}
-
-    <section class="daftar-penugasan daftar-nilai-panel">
-        <h2>Daftar Nilai Siswa</h2>
-
-        {% if daftar_siswa %}
-
-        <form method="POST">
-            <input type="hidden" name="aksi" value="simpan_nilai">
-
-            <div class="tabel-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Nomor Absen</th>
-                            <th>Nama Siswa</th>
-
-                            {% if pengaturan.metode_tugas == 'satu_per_satu' %}
-
-                                {% for tugas in daftar_tugas %}
-                                <th>{{ tugas.nama_tugas }}</th>
-                                {% endfor %}
-
-                            {% else %}
-                                <th>Rata-rata Tugas</th>
-                            {% endif %}
-
-                            <th>UTS</th>
-                            <th>UAS</th>
-                            <th>Kehadiran</th>
-                            <th>Nilai Akhir</th>
-                            <th>Predikat</th>
-                            <th>Status Ketuntasan</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for siswa in daftar_siswa %}
-                        {% set id_roster = siswa.id_periode_siswa %}
-                        {% set hasil = hasil_nilai[id_roster] %}
-
-                        <tr>
-                            <td data-label="Nomor Absen">{{ siswa.no_absen }}</td>
-                            <td data-label="Nama Siswa">{{ siswa.nama_siswa }}</td>
-
-                            {% if pengaturan.metode_tugas == 'satu_per_satu' %}
-
-                                {% for tugas in daftar_tugas %}
-                                <td data-label="{{ tugas.nama_tugas }}">
-                                    <input
-                                        type="number"
-                                        name="tugas_{{ id_roster }}_{{ tugas.id_tugas }}"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                        value="{{ nilai_tugas.get((id_roster, tugas.id_tugas)) if nilai_tugas.get((id_roster, tugas.id_tugas)) is not none else '' }}"
-                                        placeholder="-"
-                                        {% if periode.status_terkunci == 1 %}disabled{% endif %}
-                                    >
-                                </td>
-                                {% endfor %}
-
-                            {% else %}
-                                <td data-label="Rata-rata Tugas">
-                                    <input
-                                        type="number"
-                                        name="rata_rata_{{ id_roster }}"
-                                        min="0"
-                                        max="100"
-                                        step="0.01"
-                                        value="{{ nilai_rata_rata.get(id_roster) if nilai_rata_rata.get(id_roster) is not none else '' }}"
-                                        placeholder="-"
-                                        {% if periode.status_terkunci == 1 %}disabled{% endif %}
-                                    >
-                                </td>
-                            {% endif %}
-
-                            {% set komponen = nilai_komponen.get(id_roster) %}
-
-                            <td data-label="UTS">
-                                <input
-                                    type="number"
-                                    name="uts_{{ id_roster }}"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    value="{{ komponen.nilai_uts if komponen and komponen.nilai_uts is not none else '' }}"
-                                    placeholder="-"
-                                    {% if periode.status_terkunci == 1 %}disabled{% endif %}
-                                >
-                            </td>
-
-                            <td data-label="UAS">
-                                <input
-                                    type="number"
-                                    name="uas_{{ id_roster }}"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    value="{{ komponen.nilai_uas if komponen and komponen.nilai_uas is not none else '' }}"
-                                    placeholder="-"
-                                    {% if periode.status_terkunci == 1 %}disabled{% endif %}
-                                >
-                            </td>
-
-                            <td data-label="Kehadiran">
-                                <input
-                                    type="number"
-                                    name="kehadiran_{{ id_roster }}"
-                                    min="0"
-                                    max="100"
-                                    step="0.01"
-                                    value="{{ komponen.nilai_kehadiran if komponen and komponen.nilai_kehadiran is not none else '' }}"
-                                    placeholder="-"
-                                    {% if periode.status_terkunci == 1 %}disabled{% endif %}
-                                >
-                            </td>
-
-                            <td data-label="Nilai Akhir">
-                                {% if hasil.nilai_akhir is not none %}
-                                    {{ "%.2f"|format(hasil.nilai_akhir) }}
-                                {% else %}
-                                    Belum lengkap
-                                {% endif %}
-                            </td>
-
-                            <td data-label="Predikat">{{ hasil.grade if hasil.grade else "-" }}</td>
-
-                            <td data-label="Status Ketuntasan">
-                                {{ hasil.status_kkm if hasil.status_kkm else "Belum dihitung" }}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <!-- ============================================================
+         MAIN CONTENT AREA
+         ============================================================ -->
+    <main class="main-content">
+        <!-- Topbar Breadcrumb & Notifications -->
+        <header class="main-topbar">
+            <div class="breadcrumb">
+                <a href="{{ url_for('pengaturan_bobot') }}" class="breadcrumb-parent">Pengaturan Penilaian</a>
+                <span class="breadcrumb-separator">&rsaquo;</span>
+                <span class="breadcrumb-current">Jumlah Tugas</span>
             </div>
 
-            {% if periode.status_terkunci == 0 %}
-            <button type="submit" class="btn-tambah">
-                Simpan Semua Nilai
-            </button>
-            {% endif %}
-        </form>
+            <div class="topbar-actions">
+                <button type="button" class="notification-bell-btn" title="Notifikasi">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="notification-badge">2</span>
+                </button>
+            </div>
+        </header>
 
-        {% else %}
-
-        <div class="kosong">
-            <h3>Belum Ada Siswa</h3>
-            <p>Tambahkan siswa melalui halaman Data Siswa.</p>
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Pengaturan Jumlah Tugas</h1>
+            <p class="page-subtitle">Tentukan jumlah tugas yang akan dinilai.</p>
         </div>
 
-        {% endif %}
-    </section>
+        <!-- ============================================================
+             CARD 1: METODE PENGISIAN TUGAS
+             ============================================================ -->
+        <section class="card-metode">
+            <div class="card-metode-info">
+                <h2>Metode Pengisian Tugas</h2>
+                <p>Pilih cara memasukkan nilai tugas siswa.</p>
+            </div>
 
+            <form method="POST" class="form-metode">
+                <input type="hidden" name="aksi" value="simpan_metode">
+                <select name="metode_tugas" class="select-metode" required>
+                    <option value="satu_per_satu" {% if pengaturan.metode_tugas == 'satu_per_satu' %}selected{% endif %}>
+                        Satu per Satu
+                    </option>
+                    <option value="langsung_rata_rata" {% if pengaturan.metode_tugas == 'langsung_rata_rata' %}selected{% endif %}>
+                        Langsung Rata-rata
+                    </option>
+                </select>
+
+                <button type="submit" class="btn-primary" {% if periode.status_terkunci == 1 %}disabled{% endif %}>
+                    Simpan Metode
+                </button>
+            </form>
+        </section>
+
+        <!-- ============================================================
+             CARD 2: PENGATURAN JUMLAH TUGAS
+             ============================================================ -->
+        <section class="card-jumlah-tugas">
+            <div class="card-tugas-header">
+                <div class="card-tugas-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <div class="card-tugas-header-text">
+                    <h2>Pengaturan Jumlah Tugas</h2>
+                    <p>Tentukan jumlah tugas yang akan dinilai. Tugas yang sudah dibuat dapat diubah.</p>
+                </div>
+            </div>
+
+            <form method="POST" class="form-jumlah-tugas" id="formJumlahTugas">
+                <input type="hidden" name="aksi" value="atur_jumlah_tugas">
+
+                <div class="counter-wrapper">
+                    <label class="counter-label" for="inputJumlahTugas">Jumlah Tugas</label>
+                    <div class="counter-group">
+                        <button type="button" class="btn-counter" id="btnMinus" aria-label="Kurangi jumlah tugas">&minus;</button>
+                        <input
+                            type="number"
+                            id="inputJumlahTugas"
+                            name="jumlah_tugas"
+                            class="input-counter"
+                            value="{{ daftar_tugas|length if daftar_tugas|length > 0 else (pengaturan.jumlah_tugas if pengaturan.jumlah_tugas > 0 else 6) }}"
+                            min="1"
+                            max="100"
+                            required
+                            {% if periode.status_terkunci == 1 %}disabled{% endif %}
+                        >
+                        <button type="button" class="btn-counter" id="btnPlus" aria-label="Tambah jumlah tugas">&plus;</button>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                        <span>Info</span>
+                    </div>
+                    <span class="info-box-text">Jumlah tugas dapat diubah kapan saja.</span>
+                    <span class="info-box-text">Pastikan semua nilai sudah tersimpan.</span>
+                </div>
+
+                <button type="submit" class="btn-primary" {% if periode.status_terkunci == 1 %}disabled{% endif %}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span>Simpan Jumlah Tugas</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- ============================================================
+             CARD 3: DAFTAR NILAI SISWA
+             ============================================================ -->
+        <section class="card-daftar-nilai">
+            <div class="card-daftar-header">
+                <div class="card-daftar-header-text">
+                    <h2>Daftar Nilai Siswa</h2>
+                    <p>Masukkan nilai untuk setiap tugas.</p>
+                </div>
+
+                <button type="button" class="btn-import" id="btnImporNilai" title="Impor nilai dari file">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span>Impor Nilai</span>
+                </button>
+            </div>
+
+            <form method="POST" id="formNilaiSiswa">
+                <input type="hidden" name="aksi" value="simpan_nilai">
+
+                <div class="table-responsive">
+                    <table class="table-nilai">
+                        <thead>
+                            <tr>
+                                <th>No. Absen</th>
+                                <th>Nama Siswa</th>
+
+                                {% if pengaturan.metode_tugas == 'satu_per_satu' %}
+                                    {% for tugas in daftar_tugas %}
+                                        <th>{{ tugas.nama_tugas }}</th>
+                                    {% endfor %}
+                                {% else %}
+                                    <th>Rata-rata Tugas</th>
+                                {% endif %}
+
+                                <th>Rata-rata</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for siswa in daftar_siswa %}
+                                {% set id_roster = siswa.id_periode_siswa %}
+                                {% set hasil = hasil_nilai[id_roster] %}
+                                {% set komponen = nilai_komponen.get(id_roster) %}
+
+                                <tr data-roster="{{ id_roster }}">
+                                    <td>{{ siswa.no_absen }}</td>
+                                    <td>{{ siswa.nama_siswa }}</td>
+
+                                    {% if pengaturan.metode_tugas == 'satu_per_satu' %}
+                                        {% for tugas in daftar_tugas %}
+                                            {% set val = nilai_tugas.get((id_roster, tugas.id_tugas)) %}
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    class="input-cell input-nilai-tugas"
+                                                    data-roster="{{ id_roster }}"
+                                                    name="tugas_{{ id_roster }}_{{ tugas.id_tugas }}"
+                                                    min="0"
+                                                    max="100"
+                                                    step="0.01"
+                                                    value="{{ '%.1f'|format(val) if val is not none else '' }}"
+                                                    placeholder="-"
+                                                    autocomplete="off"
+                                                    {% if periode.status_terkunci == 1 %}disabled{% endif %}
+                                                >
+                                            </td>
+                                        {% endfor %}
+                                    {% else %}
+                                        {% set val_rata = nilai_rata_rata.get(id_roster) %}
+                                        <td>
+                                            <input
+                                                type="number"
+                                                class="input-cell input-nilai-tugas"
+                                                data-roster="{{ id_roster }}"
+                                                name="rata_rata_{{ id_roster }}"
+                                                min="0"
+                                                max="100"
+                                                step="0.01"
+                                                value="{{ '%.1f'|format(val_rata) if val_rata is not none else '' }}"
+                                                placeholder="-"
+                                                autocomplete="off"
+                                                {% if periode.status_terkunci == 1 %}disabled{% endif %}
+                                            >
+                                        </td>
+                                    {% endif %}
+
+                                    <td>
+                                        <span class="col-avg {% if hasil and hasil.nilai_tugas is not none %}highlight-blue{% endif %}" id="avg_{{ id_roster }}">
+                                            {% if hasil and hasil.nilai_tugas is not none %}
+                                                {{ "%.2f"|format(hasil.nilai_tugas) }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </span>
+                                    </td>
+
+                                    <!-- Preserve UTS, UAS, Kehadiran in database -->
+                                    <input type="hidden" name="uts_{{ id_roster }}" value="{{ komponen.nilai_uts if komponen and komponen.nilai_uts is not none else '' }}">
+                                    <input type="hidden" name="uas_{{ id_roster }}" value="{{ komponen.nilai_uas if komponen and komponen.nilai_uas is not none else '' }}">
+                                    <input type="hidden" name="kehadiran_{{ id_roster }}" value="{{ komponen.nilai_kehadiran if komponen and komponen.nilai_kehadiran is not none else '' }}">
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="{{ (daftar_tugas|length + 3) if pengaturan.metode_tugas == 'satu_per_satu' else 4 }}" style="padding: 32px; color: #94a3b8; text-align: center;">
+                                        Belum ada siswa terdaftar di kelas ini. Buka menu Data Siswa untuk menambahkan siswa.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer-actions">
+                    <div class="total-siswa-text">
+                        Total Siswa: <span class="total-siswa-val">{{ daftar_siswa|length }}</span>
+                    </div>
+
+                    <div class="table-buttons-right">
+                        <button type="button" class="btn-reset" id="btnResetNilai" {% if periode.status_terkunci == 1 %}disabled{% endif %}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                                <path d="M3 3v5h5"></path>
+                            </svg>
+                            <span>Reset Nilai</span>
+                        </button>
+
+                        <button type="submit" class="btn-primary" {% if periode.status_terkunci == 1 %}disabled{% endif %}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            <span>Simpan Nilai</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============================================================
+             CARD 4: TIPS PENGISIAN
+             ============================================================ -->
+        <section class="card-tips">
+            <div class="card-tips-left">
+                <div class="tips-header">
+                    <span class="tips-header-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="9" y1="18" x2="15" y2="18"></line>
+                            <line x1="10" y1="22" x2="14" y2="22"></line>
+                            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path>
+                        </svg>
+                    </span>
+                    <h3 class="tips-header-title">Tips Pengisian</h3>
+                </div>
+
+                <ul class="tips-list">
+                    <li class="tips-item">
+                        <span class="tips-check-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        <span>Pastikan jumlah tugas sudah sesuai sebelum menginput nilai.</span>
+                    </li>
+                    <li class="tips-item">
+                        <span class="tips-check-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        <span>Nilai dapat berupa angka 0 - 100.</span>
+                    </li>
+                    <li class="tips-item">
+                        <span class="tips-check-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d68f2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        <span>Klik &quot;Simpan Nilai&quot; setelah selesai menginput.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Vector Clipboard Illustration -->
+            <div class="card-tips-illustration">
+                <svg width="130" height="110" viewBox="0 0 140 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Soft Background Leaves / Foliage -->
+                    <path d="M22 85C16 75 14 62 20 54C28 62 30 76 28 88" fill="#bfdbfe" opacity="0.6"/>
+                    <path d="M16 95C8 90 4 78 8 70C16 74 18 86 19 96" fill="#93c5fd" opacity="0.5"/>
+                    <path d="M120 85C126 75 128 62 122 54C114 62 112 76 114 88" fill="#bfdbfe" opacity="0.6"/>
+                    <path d="M126 95C134 90 138 78 134 70C126 74 124 86 123 96" fill="#93c5fd" opacity="0.5"/>
+
+                    <!-- Clipboard Board (Blue Gradient) -->
+                    <rect x="36" y="16" width="68" height="92" rx="8" fill="#2563eb"/>
+                    <rect x="38" y="18" width="64" height="88" rx="6" fill="#3b82f6"/>
+
+                    <!-- Clip at top -->
+                    <rect x="55" y="10" width="30" height="12" rx="3" fill="#cbd5e1"/>
+                    <rect x="62" y="6" width="16" height="8" rx="2" fill="#94a3b8"/>
+                    <circle cx="70" cy="10" r="2.5" fill="#475569"/>
+
+                    <!-- Paper Sheet -->
+                    <rect x="42" y="24" width="56" height="80" rx="4" fill="#ffffff"/>
+
+                    <!-- Checkmark 1 & line -->
+                    <polyline points="47 40 51 44 58 37" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="62" y1="41" x2="90" y2="41" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+
+                    <!-- Checkmark 2 & line -->
+                    <polyline points="47 57 51 61 58 54" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="62" y1="58" x2="90" y2="58" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+
+                    <!-- Checkmark 3 & line -->
+                    <polyline points="47 74 51 78 58 71" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <line x1="62" y1="75" x2="84" y2="75" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round"/>
+
+                    <!-- Pen on the right -->
+                    <g transform="rotate(22 108 55)">
+                        <rect x="105" y="25" width="7" height="50" rx="3.5" fill="#1d4ed8"/>
+                        <path d="M105 75 L108.5 83 L112 75 Z" fill="#64748b"/>
+                        <path d="M107.5 81 L108.5 83 L109.5 81 Z" fill="#0f172a"/>
+                        <rect x="106" y="28" width="5" height="12" rx="1" fill="#60a5fa"/>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Page Footer -->
+        <footer class="page-footer">
+            &copy; 2025 Grade Master. All rights reserved.
+        </footer>
+    </main>
 </div>
-{% endblock %}
+
+<!-- ============================================================
+     MODAL IMPOR NILAI
+     ============================================================ -->
+<div class="modal-overlay" id="modalImpor">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title">Impor Nilai Tugas Siswa</h3>
+            <span class="modal-close-btn" id="btnCloseModalImpor">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 12px;">Masukkan atau tempel data nilai tugas siswa (format CSV / nilai per baris dipisahkan spasi atau koma):</p>
+            <textarea id="importTextarea" style="width: 100%; height: 120px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: monospace; font-size: 12.5px; resize: vertical;" placeholder="Contoh:&#10;80.0, 85.0, 90.0, 78.0, 88.0, 82.0&#10;75.0, 80.0, 85.0, 90.0, 85.0, 80.0"></textarea>
+            <p style="font-size: 11.5px; color: #94a3b8; margin-top: 8px;">Nilai akan otomatis dimasukkan secara berurutan ke baris siswa.</p>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="btnBatalImpor">Batal</button>
+            <button type="button" class="btn-primary" id="btnProsesImpor">Terapkan ke Tabel</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     MODAL RESET KONFIRMASI
+     ============================================================ -->
+<div class="modal-overlay" id="modalReset">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 class="modal-title">Konfirmasi Reset Nilai</h3>
+            <span class="modal-close-btn" id="btnCloseModalReset">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Apakah Anda yakin ingin mengosongkan seluruh kolom nilai tugas pada tabel ini?</p>
+            <p style="font-size: 12px; color: #ef4444; margin-top: 6px;">Perubahan baru tersimpan secara permanen setelah Anda menekan tombol "Simpan Nilai".</p>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="btnBatalReset">Batal</button>
+            <button type="button" class="btn-danger" id="btnKonfirmasiReset">Kosongkan Nilai</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     INTERACTIVE JAVASCRIPT
+     ============================================================ -->
+<script>
+    // Counter Jumlah Tugas (+ / -)
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    const inputJumlahTugas = document.getElementById('inputJumlahTugas');
+
+    if (btnMinus && btnPlus && inputJumlahTugas) {
+        btnMinus.addEventListener('click', () => {
+            let val = parseInt(inputJumlahTugas.value, 10) || 1;
+            if (val > 1) {
+                inputJumlahTugas.value = val - 1;
+            }
+        });
+
+        btnPlus.addEventListener('click', () => {
+            let val = parseInt(inputJumlahTugas.value, 10) || 1;
+            if (val < 100) {
+                inputJumlahTugas.value = val + 1;
+            }
+        });
+    }
+
+    // Real-Time Client-Side Average Calculation
+    function updateRowAverage(rosterId) {
+        const row = document.querySelector(`tr[data-roster="${rosterId}"]`);
+        if (!row) return;
+
+        const inputs = row.querySelectorAll('.input-nilai-tugas');
+        let total = 0;
+        let count = 0;
+
+        inputs.forEach(input => {
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val >= 0 && val <= 100) {
+                total += val;
+                count++;
+            }
+        });
+
+        const avgSpan = document.getElementById(`avg_${rosterId}`);
+        if (avgSpan) {
+            if (count > 0) {
+                const avg = total / count;
+                avgSpan.textContent = avg.toFixed(2);
+                avgSpan.classList.add('highlight-blue');
+            } else {
+                avgSpan.textContent = '-';
+                avgSpan.classList.remove('highlight-blue');
+            }
+        }
+    }
+
+    document.querySelectorAll('.input-nilai-tugas').forEach(input => {
+        input.addEventListener('input', () => {
+            const rosterId = input.getAttribute('data-roster');
+            if (rosterId) {
+                updateRowAverage(rosterId);
+            }
+        });
+    });
+
+    // Reset Nilai Modal
+    const modalReset = document.getElementById('modalReset');
+    const btnResetNilai = document.getElementById('btnResetNilai');
+    const btnCloseModalReset = document.getElementById('btnCloseModalReset');
+    const btnBatalReset = document.getElementById('btnBatalReset');
+    const btnKonfirmasiReset = document.getElementById('btnKonfirmasiReset');
+
+    if (btnResetNilai && modalReset) {
+        btnResetNilai.addEventListener('click', () => {
+            modalReset.classList.add('is-active');
+        });
+
+        const closeResetModal = () => modalReset.classList.remove('is-active');
+        if (btnCloseModalReset) btnCloseModalReset.addEventListener('click', closeResetModal);
+        if (btnBatalReset) btnBatalReset.addEventListener('click', closeResetModal);
+
+        if (btnKonfirmasiReset) {
+            btnKonfirmasiReset.addEventListener('click', () => {
+                document.querySelectorAll('.input-nilai-tugas').forEach(input => {
+                    input.value = '';
+                });
+                document.querySelectorAll('.col-avg').forEach(span => {
+                    span.textContent = '-';
+                    span.classList.remove('highlight-blue');
+                });
+                closeResetModal();
+            });
+        }
+    }
+
+    // Impor Nilai Modal
+    const modalImpor = document.getElementById('modalImpor');
+    const btnImporNilai = document.getElementById('btnImporNilai');
+    const btnCloseModalImpor = document.getElementById('btnCloseModalImpor');
+    const btnBatalImpor = document.getElementById('btnBatalImpor');
+    const btnProsesImpor = document.getElementById('btnProsesImpor');
+    const importTextarea = document.getElementById('importTextarea');
+
+    if (btnImporNilai && modalImpor) {
+        btnImporNilai.addEventListener('click', () => {
+            modalImpor.classList.add('is-active');
+            if (importTextarea) importTextarea.focus();
+        });
+
+        const closeImporModal = () => modalImpor.classList.remove('is-active');
+        if (btnCloseModalImpor) btnCloseModalImpor.addEventListener('click', closeImporModal);
+        if (btnBatalImpor) btnBatalImpor.addEventListener('click', closeImporModal);
+
+        if (btnProsesImpor && importTextarea) {
+            btnProsesImpor.addEventListener('click', () => {
+                const text = importTextarea.value.trim();
+                if (!text) {
+                    closeImporModal();
+                    return;
+                }
+
+                const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+                const rows = document.querySelectorAll('tbody tr[data-roster]');
+
+                lines.forEach((line, rowIndex) => {
+                    if (rowIndex < rows.length) {
+                        const row = rows[rowIndex];
+                        const inputs = row.querySelectorAll('.input-nilai-tugas');
+                        const values = line.split(/[,\t\s]+/).filter(v => v.trim() !== '');
+
+                        values.forEach((val, valIndex) => {
+                            if (valIndex < inputs.length) {
+                                const num = parseFloat(val);
+                                if (!isNaN(num) && num >= 0 && num <= 100) {
+                                    inputs[valIndex].value = num.toFixed(1);
+                                }
+                            }
+                        });
+
+                        const rosterId = row.getAttribute('data-roster');
+                        if (rosterId) {
+                            updateRowAverage(rosterId);
+                        }
+                    }
+                });
+
+                closeImporModal();
+            });
+        }
+    }
+
+    // Auto dismiss toast after 4 seconds
+    const toast = document.getElementById('toastContainer');
+    if (toast) {
+        setTimeout(() => {
+            toast.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translate(-50%, -15px)';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+    }
+</script>
+
+</body>
+</html>

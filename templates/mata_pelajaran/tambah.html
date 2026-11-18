@@ -1,16 +1,11 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Mata Pelajaran | GRADE MASTER</title>
+{% extends "layout.html" %}
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/penugasan.css') }}">
-</head>
-<body>
+{% block title %}Tambah Mata Pelajaran | GRADE MASTER{% endblock %}
+{% block breadcrumb %}Tambah Mata Pelajaran{% endblock %}
 
-<main class="penugasan-container">
+{% block content %}
+
+<div class="penugasan-container">
 
     <header class="halaman-header">
         <h1>Tambah Mata Pelajaran</h1>
@@ -51,7 +46,6 @@
 
     </form>
 
-</main>
+</div>
 
-</body>
-</html>
+{% endblock %}

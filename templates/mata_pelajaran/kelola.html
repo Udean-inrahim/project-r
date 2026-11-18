@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Mata Pelajaran dan Kelas | GRADE MASTER</title>
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/penugasan.css') }}">
-</head>
-<body>
+{% extends "layout.html" %}
 
-    {% with pesan = get_flashed_messages() %}
-        {% if pesan %}
-            <div class="toast-notification">
-                {{ pesan[-1] }}
-            </div>
-        {% endif %}
-    {% endwith %}
-    <main class="penugasan-container halaman-mapel">
+{% block title %}Kelola Mata Pelajaran | GRADE MASTER{% endblock %}
+{% block breadcrumb %}Kelola Mata Pelajaran{% endblock %}
+
+{% block content %}
+
+<div class="penugasan-container halaman-mapel">
 
     <header class="halaman-header">
         <div>
@@ -109,7 +98,8 @@
         </div>
 
     </section>
-    </main>
+</div>
+
 <script>
     const inputCari = document.getElementById("cariMataPelajaran");
     const daftarKartu = document.querySelectorAll(".kartu-penugasan");
@@ -127,5 +117,4 @@
     });
 </script>
 
-</body>
-</html>
+{% endblock %}

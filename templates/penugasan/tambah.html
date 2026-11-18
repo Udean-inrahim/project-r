@@ -1,68 +1,62 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Penugasan | GRADE MASTER</title>
+{% extends "layout.html" %}
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/penugasan.css') }}">
-</head>
-<body>
+{% block title %}Tambah Penugasan | GRADE MASTER{% endblock %}
+{% block breadcrumb %}Tambah Penugasan{% endblock %}
 
-    <main class="penugasan-container">
+{% block content %}
 
-        <header class="halaman-header">
-            <h1>Tambah Penugasan</h1>
-            <p>Masukkan mata pelajaran dan kelas awal yang Anda ajar.</p>
-        </header>
+<div class="penugasan-container">
 
-        <form method="POST" class="form-penugasan">
+    <header class="halaman-header">
+        <h1>Tambah Penugasan</h1>
+        <p>Masukkan mata pelajaran dan kelas awal yang Anda ajar.</p>
+    </header>
 
-            <div class="form-group">
-                <label for="nama_mata_pelajaran">
-                    Nama Mata Pelajaran
-                </label>
+    <form method="POST" class="form-penugasan">
 
-                <input
-                    type="text"
-                    id="nama_mata_pelajaran"
-                    name="nama_mata_pelajaran"
-                    placeholder="Contoh: Informatika"
-                    required
-                >
-            </div>
+        <div class="form-group">
+            <label for="nama_mata_pelajaran">
+                Nama Mata Pelajaran
+            </label>
 
-            <div class="form-group">
-                <label for="kelas_awal">Kelas Awal</label>
+            <input
+                type="text"
+                id="nama_mata_pelajaran"
+                name="nama_mata_pelajaran"
+                placeholder="Contoh: Informatika"
+                required
+            >
+        </div>
 
-                <input
-                    type="text"
-                    id="kelas_awal"
-                    name="kelas_awal"
-                    placeholder="Contoh: X"
-                    required
-                >
-            </div>
+        <div class="form-group">
+            <label for="kelas_awal">Kelas Awal</label>
 
-            {% if pesan %}
-                <p class="pesan-error">{{ pesan }}</p>
-            {% endif %}
+            <input
+                type="text"
+                id="kelas_awal"
+                name="kelas_awal"
+                placeholder="Contoh: X"
+                required
+            >
+        </div>
 
-            <div class="form-actions">
-                <a href="{{ url_for('daftar_penugasan') }}"
-                   class="btn-batal">
-                    Batal
-                </a>
+        {% if pesan %}
+            <p class="pesan-error">{{ pesan }}</p>
+        {% endif %}
 
-                <button type="submit" class="btn-simpan">
-                    Simpan Penugasan
-                </button>
-            </div>
+        <div class="form-actions">
+            <a href="{{ url_for('daftar_penugasan') }}"
+               class="btn-batal">
+                Batal
+            </a>
 
-        </form>
+            <button type="submit" class="btn-simpan">
+                Simpan Penugasan
+            </button>
+        </div>
 
-    </main>
+    </form>
 
-</body>
-</html>
+</div>
+
+{% endblock %}

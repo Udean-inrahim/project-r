@@ -1,65 +1,59 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Penugasan | GRADE MASTER</title>
+{% extends "layout.html" %}
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/penugasan.css') }}">
-</head>
-<body>
+{% block title %}Kelola Penugasan | GRADE MASTER{% endblock %}
+{% block breadcrumb %}Kelola Penugasan{% endblock %}
 
-    <main class="penugasan-container">
+{% block content %}
 
-        <header class="halaman-header">
-            <div>
-                <h1>Kelola Mata Pelajaran dan Kelas</h1>
-                <p>Tambah dan kelola penugasan mengajar Anda.</p>
+<div class="penugasan-container">
+
+    <header class="halaman-header">
+        <div>
+            <h1>Kelola Mata Pelajaran dan Kelas</h1>
+            <p>Tambah dan kelola penugasan mengajar Anda.</p>
+        </div>
+
+        <a href="{{ url_for('tambah_penugasan') }}"
+           class="btn-tambah">
+            + Tambah Penugasan
+        </a>
+    </header>
+
+    <section class="daftar-penugasan">
+
+        {% if daftar_penugasan %}
+
+            {% for item in daftar_penugasan %}
+            <article class="kartu-penugasan">
+                <h2>{{ item.nama_mata_pelajaran }}</h2>
+
+                <p>
+                    Kelas awal:
+                    <strong>{{ item.kelas_awal }}</strong>
+                </p>
+            </article>
+            {% endfor %}
+
+        {% else %}
+
+            <div class="kosong">
+                <h2>Belum Ada Penugasan</h2>
+
+                <p>
+                    Anda belum memiliki mata pelajaran dan kelas.
+                    Silakan buat penugasan pertama Anda.
+                </p>
+
+                <a href="{{ url_for('halaman_pilih_penugasan') }}"
+                class="btn-tambah">
+                    + Buat Penugasan
+                </a>
             </div>
 
-            <a href="{{ url_for('tambah_penugasan') }}"
-               class="btn-tambah">
-                + Tambah Penugasan
-            </a>
-        </header>
+        {% endif %}
 
-        <section class="daftar-penugasan">
+    </section>
 
-            {% if daftar_penugasan %}
+</div>
 
-                {% for item in daftar_penugasan %}
-                <article class="kartu-penugasan">
-                    <h2>{{ item.nama_mata_pelajaran }}</h2>
-
-                    <p>
-                        Kelas awal:
-                        <strong>{{ item.kelas_awal }}</strong>
-                    </p>
-                </article>
-                {% endfor %}
-
-            {% else %}
-
-                <div class="kosong">
-                    <h2>Belum Ada Penugasan</h2>
-
-                    <p>
-                        Anda belum memiliki mata pelajaran dan kelas.
-                        Silakan buat penugasan pertama Anda.
-                    </p>
-
-                    <a href="{{ url_for('halaman_pilih_penugasan') }}"
-                    class="btn-tambah">
-                        + Buat Penugasan
-                    </a>
-                </div>
-
-            {% endif %}
-
-        </section>
-
-    </main>
-
-</body>
-</html>
+{% endblock %}

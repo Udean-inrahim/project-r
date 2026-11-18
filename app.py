@@ -100,6 +100,60 @@ def ambil_mata_pelajaran(id_mata_pelajaran):
     return data
 
 
+@app.context_processor
+def inject_global_sidebar_data():
+    id_guru = session.get("id_guru")
+    if not id_guru:
+        return {}
+    try:
+        conn = get_db_connection()
+        id_periode = session.get("id_periode")
+        id_kelas = session.get("id_kelas")
+        id_mp = session.get("id_mata_pelajaran")
+
+        mapel_nama = ""
+        kelas_nama = ""
+        periode_data = None
+
+        if id_periode:
+            p = conn.execute("""
+                SELECT p.*, k.nama_kelas, m.nama_mata_pelajaran
+                FROM periode_akademik p
+                JOIN kelas k ON p.id_kelas = k.id_kelas
+                JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+                WHERE p.id_periode = ? AND m.id_guru = ?
+            """, (id_periode, id_guru)).fetchone()
+            if p:
+                periode_data = p
+                mapel_nama = p["nama_mata_pelajaran"]
+                kelas_nama = p["nama_kelas"]
+
+        if not mapel_nama and id_mp:
+            m = conn.execute("SELECT nama_mata_pelajaran FROM mata_pelajaran WHERE id_mata_pelajaran = ? AND id_guru = ?", (id_mp, id_guru)).fetchone()
+            if m:
+                mapel_nama = m["nama_mata_pelajaran"]
+
+        if not kelas_nama and id_kelas:
+            k = conn.execute("SELECT nama_kelas FROM kelas WHERE id_kelas = ?", (id_kelas,)).fetchone()
+            if k:
+                kelas_nama = k["nama_kelas"]
+
+        conn.close()
+        return {
+            "global_nama_guru": session.get("nama_guru", "Guru"),
+            "global_mapel_aktif": mapel_nama,
+            "global_kelas_aktif": kelas_nama,
+            "global_periode_aktif": periode_data
+        }
+    except Exception:
+        return {
+            "global_nama_guru": session.get("nama_guru", "Guru"),
+            "global_mapel_aktif": "",
+            "global_kelas_aktif": "",
+            "global_periode_aktif": None
+        }
+
+
 def ambil_kelas(id_kelas, termasuk_arsip=False):
     if not id_kelas:
         return None
@@ -2851,6 +2905,17 @@ def halaman_penilaian():
                 "status_kkm": status_kkm
             }
 
+        kelas_info = conn.execute("""
+            SELECT k.nama_kelas, m.nama_mata_pelajaran
+            FROM periode_akademik p
+            JOIN kelas k ON p.id_kelas = k.id_kelas
+            JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+            WHERE p.id_periode = ?
+        """, (id_periode,)).fetchone()
+
+        nama_kelas = kelas_info["nama_kelas"] if kelas_info else ""
+        nama_mapel = kelas_info["nama_mata_pelajaran"] if kelas_info else ""
+
         return render_template(
             "penilaian/penilaian.html",
             periode=periode,
@@ -2860,7 +2925,10 @@ def halaman_penilaian():
             nilai_tugas=nilai_tugas,
             nilai_rata_rata=nilai_rata_rata,
             nilai_komponen=nilai_komponen,
-            hasil_nilai=hasil_nilai
+            hasil_nilai=hasil_nilai,
+            nama_guru=session.get("nama_guru", "Guru"),
+            kelas_aktif=nama_kelas,
+            mata_pelajaran_aktif=nama_mapel
         )
 
     finally:

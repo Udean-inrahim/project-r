@@ -12,3 +12,6 @@ instance/*.sqlite3
 static/rendered_dashboard.html
 static/dashboard_full.png
 static/dashboard_preview*.png
+
+.vercel
+.env*
