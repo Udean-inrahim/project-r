@@ -57,6 +57,10 @@ Di CI, set `SECRET_KEY` (contoh: nilai dummy) agar import aplikasi berhasil.
 - Deploy ke Vercel (`vercel.json`) menggunakan `app.py` sebagai serverless function.
 - Pastikan variabel `DATABASE_URL` dan `SECRET_KEY` tersedia di project Vercel (Production/Preview).
 
+## Ekspor
+
+- Halaman rekapitulasi menyediakan ekspor CSV di browser dan cetak PDF melalui dialog cetak browser.
+
 ## Catatan keamanan (sudah diterapkan)
 
 - `SECRET_KEY` wajib, cookie sesi `HttpOnly`/`SameSite=Lax`, `Secure` aktif saat `VERCEL=1`.
