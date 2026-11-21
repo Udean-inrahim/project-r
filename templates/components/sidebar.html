@@ -178,9 +178,9 @@
 
 <script>
     (function() {
-        const menuBtn = document.getElementById('mobileMenuBtn');
-        const closeBtn = document.getElementById('sidebarMobileClose');
-        const backdrop = document.getElementById('sidebarBackdrop');
+        let menuBtn;
+        let closeBtn;
+        let backdrop;
 
         function bukaDrawer() {
             document.body.classList.add('sidebar-mobile-open');
@@ -225,19 +225,31 @@
             }
         }
 
-        if (menuBtn) {
-            menuBtn.addEventListener('click', function() {
-                if (document.body.classList.contains('sidebar-mobile-open')) {
-                    tutupDrawer();
-                } else {
-                    bukaDrawer();
-                }
+        function inisialisasiDrawer() {
+            menuBtn = document.getElementById('mobileMenuBtn');
+            closeBtn = document.getElementById('sidebarMobileClose');
+            backdrop = document.getElementById('sidebarBackdrop');
+
+            if (menuBtn) {
+                menuBtn.addEventListener('click', function() {
+                    if (document.body.classList.contains('sidebar-mobile-open')) {
+                        tutupDrawer();
+                    } else {
+                        bukaDrawer();
+                    }
+                });
+            }
+            if (closeBtn) closeBtn.addEventListener('click', tutupDrawer);
+            if (backdrop) backdrop.addEventListener('click', tutupDrawer);
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') tutupDrawer();
             });
         }
-        if (closeBtn) closeBtn.addEventListener('click', tutupDrawer);
-        if (backdrop) backdrop.addEventListener('click', tutupDrawer);
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') tutupDrawer();
-        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inisialisasiDrawer, { once: true });
+        } else {
+            inisialisasiDrawer();
+        }
     })();
 </script>

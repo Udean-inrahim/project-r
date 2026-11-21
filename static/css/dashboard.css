@@ -1536,9 +1536,19 @@ button:focus-visible,
     .classes-cards-grid {
         grid-template-columns: 1fr;
     }
-    .main-area { min-width: 0; padding: 20px 16px; overflow: visible; }
-    .welcome-card { gap: 12px; padding: 20px; }
-    .welcome-illustration { width: 130px; }
+    .main-area {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        min-height: 100vh;
+        min-height: 100dvh;
+        padding: 20px 16px;
+        overflow: visible;
+    }
+    .main-area > * { flex: 0 0 auto; }
+    .welcome-card { min-height: 0; gap: 12px; padding: 20px; }
+    .welcome-info { flex: 1 1 auto; }
+    .welcome-illustration { width: 100px; }
     .welcome-illustration img { max-height: 145px; }
     .dashboard-period-card { grid-template-columns: 1fr; }
     .dashboard-period-card > a { width: 100%; }
@@ -1555,11 +1565,11 @@ button:focus-visible,
 
 @media (max-width: 420px) {
     .main-area { padding: 16px 12px; }
-    .welcome-card { align-items: flex-start; padding: 16px; }
+    .welcome-card { align-items: flex-start; flex-direction: column; padding: 16px; }
     .welcome-info { min-width: 0; }
     .welcome-title { font-size: 17px; }
     .welcome-sub { font-size: 11px; }
-    .welcome-illustration { width: 82px; }
-    .welcome-illustration img { max-height: 110px; }
+    .welcome-illustration { width: 100%; justify-content: center; }
+    .welcome-illustration img { width: 110px; max-height: 110px; }
     .dashboard-empty-state { padding: 16px; }
 }
