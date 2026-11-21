@@ -14,4 +14,4 @@ static/dashboard_full.png
 static/dashboard_preview*.png
 
 .vercel
-.env*
+scratch/
