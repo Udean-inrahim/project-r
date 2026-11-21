@@ -3250,6 +3250,9 @@ def halaman_penilaian():
 
                     for siswa in daftar_siswa_form:
                         id_roster = siswa["id_periode_siswa"]
+                        perubahan_tugas = []
+                        perubahan_rata = []
+                        perubahan_komp = []
 
                         # Nilai tugas satu per satu
                         if metode == "satu_per_satu":
@@ -3259,8 +3262,6 @@ def halaman_penilaian():
                                 WHERE id_periode = ?
                                 ORDER BY id_tugas
                             """, (id_periode,)).fetchall()
-
-                            perubahan_tugas = []
 
                             for tugas in daftar_tugas:
                                 id_tugas = tugas["id_tugas"]
@@ -3304,7 +3305,6 @@ def halaman_penilaian():
                             )
 
                             lama = nilai_lama_rata.get(id_roster)
-                            perubahan_rata = []
                             if lama != nilai_rata:
                                 perubahan_rata.append(
                                     f"rata_rata: {lama if lama is not None else '-'} -> {nilai_rata if nilai_rata is not None else '-'}"
@@ -3330,7 +3330,6 @@ def halaman_penilaian():
                         )
 
                         lama_komp = nilai_lama_komponen.get(id_roster)
-                        perubahan_komp = []
                         if lama_komp:
                             uts_l, uas_l, k_h_l = lama_komp
                             if uts_l != nilai_uts:
@@ -3367,8 +3366,6 @@ def halaman_penilaian():
                             nilai_kehadiran
                         ))
 
-                    conn.commit()
-                    try:
                         # LOG PER-SISWA JIKA ADA PERUBAHAN
                         if perubahan_tugas or perubahan_rata or perubahan_komp:
                             catat_riwayat(
@@ -3381,6 +3378,9 @@ def halaman_penilaian():
                                 None,
                                 "; ".join(perubahan_tugas + perubahan_rata + perubahan_komp)
                             )
+
+                    conn.commit()
+                    try:
                         catat_riwayat(
                             conn,
                             session.get("id_guru"),
