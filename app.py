@@ -14,9 +14,22 @@ from werkzeug.security import (
 from database import IntegrityError, buat_tabel, get_db_connection
 
 
+def ambil_secret_key():
+    kunci = os.environ.get("SECRET_KEY", "").strip()
+    if not kunci:
+        raise RuntimeError(
+            "SECRET_KEY belum diatur. Isi environment variable SECRET_KEY "
+            "atau berkas .env."
+        )
+    return kunci
+
+
 app = Flask(__name__)
-app.secret_key = os.environ.get(
-    "SECRET_KEY", "grade_master_v2_kunci_sementara"
+app.secret_key = ambil_secret_key()
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("VERCEL") == "1",
 )
 
 # Jangan biarkan kegagalan database saat import mematikan seluruh aplikasi.
@@ -474,7 +487,7 @@ def register():
     return render_template("auth/register.html", pesan=pesan)
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("login"))

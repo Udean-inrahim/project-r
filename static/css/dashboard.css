@@ -1389,6 +1389,10 @@ button:focus-visible,
     gap: 8px;
 }
 
+.dialog-actions .form-keluar {
+    margin: 0;
+}
+
 .btn-secondary {
     padding: 6px 14px;
     border-radius: 6px;
