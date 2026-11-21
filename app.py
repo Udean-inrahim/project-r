@@ -7,13 +7,15 @@ from functools import wraps
 from flask import (
     Flask, render_template, request,
     redirect, url_for, session, flash,
-    jsonify, abort
+    jsonify, abort, g, has_app_context
 )
 from werkzeug.security import (
     generate_password_hash, check_password_hash
 )
 
-from database import IntegrityError, buat_tabel, get_db_connection
+from database import (
+    IntegrityError, buat_tabel, get_db_connection as buka_koneksi_baru
+)
 
 
 def ambil_secret_key():
@@ -33,6 +35,43 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("VERCEL") == "1",
 )
+
+
+class KoneksiPermintaan:
+    """Satu koneksi database dipakai ulang selama satu request."""
+
+    def __init__(self, koneksi):
+        self._koneksi = koneksi
+
+    def __getattr__(self, nama):
+        return getattr(self._koneksi, nama)
+
+    def close(self):
+        # Rute memanggil close() setelah selesai. Koneksi bersama tidak
+        # ditutup di sini, tetapi transaksi yang masih terbuka diakhiri
+        # supaya request berikutnya tidak mewarisi status transaksi gagal.
+        try:
+            self._koneksi.rollback()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def get_db_connection():
+    if not has_app_context():
+        return buka_koneksi_baru()
+
+    koneksi = g.get("_koneksi_db")
+    if koneksi is None:
+        koneksi = buka_koneksi_baru()
+        g._koneksi_db = koneksi
+    return KoneksiPermintaan(koneksi)
+
+
+@app.teardown_appcontext
+def tutup_koneksi_db(_):
+    koneksi = g.pop("_koneksi_db", None)
+    if koneksi is not None:
+        koneksi.close()
 
 
 def token_csrf():
