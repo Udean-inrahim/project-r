@@ -196,6 +196,136 @@ def ambil_periode(id_periode):
     return data
 
 
+def pastikan_periode_aktif():
+    """
+    Memastikan session memiliki id_periode yang valid milik guru yang login.
+    Jika tidak ada atau tidak valid, coba cari atau buat secara otomatis:
+    1. Cek periode dari id_periode di session.
+    2. Cek periode aktif dari id_kelas di session (buat periode awal jika kelas belum punya).
+    3. Cek periode aktif dari id_mata_pelajaran di session.
+    4. Cek periode aktif apa pun milik guru.
+    """
+    id_guru = session.get("id_guru")
+    if not id_guru:
+        return None
+
+    id_periode = session.get("id_periode")
+    periode = ambil_periode(id_periode)
+    if periode:
+        return periode
+
+    conn = get_db_connection()
+    try:
+        # Cek kelas aktif di session
+        id_kelas = session.get("id_kelas")
+        if id_kelas:
+            k = conn.execute("""
+                SELECT k.*, m.id_mata_pelajaran
+                FROM kelas k
+                JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+                WHERE k.id_kelas = ? AND m.id_guru = ? AND k.status_arsip = 0
+            """, (id_kelas, id_guru)).fetchone()
+
+            if k:
+                p = conn.execute("""
+                    SELECT * FROM periode_akademik
+                    WHERE id_kelas = ?
+                    ORDER BY status_aktif DESC, id_periode DESC
+                    LIMIT 1
+                """, (id_kelas,)).fetchone()
+
+                if not p:
+                    cursor = conn.execute("""
+                        INSERT INTO periode_akademik (id_kelas, tahun_ajaran, semester, status_aktif, status_terkunci)
+                        VALUES (?, '2026/2027', 'Ganjil', 1, 0)
+                        RETURNING *
+                    """, (id_kelas,))
+                    p = cursor.fetchone()
+                    conn.execute("""
+                        INSERT INTO pengaturan_penilaian (
+                            id_periode, bobot_sudah_diatur, grade_sudah_diatur,
+                            bobot_tugas, bobot_uts, bobot_uas, bobot_kehadiran,
+                            kkm, batas_a, batas_b, batas_c, batas_d, batas_e
+                        )
+                        VALUES (?, 1, 1, 30, 25, 30, 15, 75, 85, 75, 65, 50, 0)
+                    """, (p["id_periode"],))
+                    conn.commit()
+
+                session["id_periode"] = p["id_periode"]
+                session["id_kelas"] = p["id_kelas"]
+                session["id_mata_pelajaran"] = k["id_mata_pelajaran"]
+                return ambil_periode(p["id_periode"])
+
+        # Cek berdasarkan id_mata_pelajaran di session
+        id_mp = session.get("id_mata_pelajaran")
+        if id_mp:
+            p = conn.execute("""
+                SELECT p.*, k.id_mata_pelajaran
+                FROM periode_akademik p
+                JOIN kelas k ON p.id_kelas = k.id_kelas
+                JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+                WHERE m.id_mata_pelajaran = ? AND m.id_guru = ? AND k.status_arsip = 0
+                ORDER BY p.status_aktif DESC, p.id_periode DESC
+                LIMIT 1
+            """, (id_mp, id_guru)).fetchone()
+
+            if p:
+                session["id_periode"] = p["id_periode"]
+                session["id_kelas"] = p["id_kelas"]
+                session["id_mata_pelajaran"] = p["id_mata_pelajaran"]
+                return ambil_periode(p["id_periode"])
+
+            # Jika mapel ini punya kelas tapi belum ada periode, buatkan periode
+            k = conn.execute("""
+                SELECT * FROM kelas
+                WHERE id_mata_pelajaran = ? AND status_arsip = 0
+                ORDER BY id_kelas ASC
+                LIMIT 1
+            """, (id_mp,)).fetchone()
+            if k:
+                cursor = conn.execute("""
+                    INSERT INTO periode_akademik (id_kelas, tahun_ajaran, semester, status_aktif, status_terkunci)
+                    VALUES (?, '2026/2027', 'Ganjil', 1, 0)
+                    RETURNING *
+                """, (k["id_kelas"],))
+                p = cursor.fetchone()
+                conn.execute("""
+                    INSERT INTO pengaturan_penilaian (
+                        id_periode, bobot_sudah_diatur, grade_sudah_diatur,
+                        bobot_tugas, bobot_uts, bobot_uas, bobot_kehadiran,
+                        kkm, batas_a, batas_b, batas_c, batas_d, batas_e
+                    )
+                    VALUES (?, 1, 1, 30, 25, 30, 15, 75, 85, 75, 65, 50, 0)
+                """, (p["id_periode"],))
+                conn.commit()
+
+                session["id_periode"] = p["id_periode"]
+                session["id_kelas"] = p["id_kelas"]
+                session["id_mata_pelajaran"] = k["id_mata_pelajaran"]
+                return ambil_periode(p["id_periode"])
+
+        # Cek seluruh periode yang dimiliki guru
+        p = conn.execute("""
+            SELECT p.*, k.id_mata_pelajaran
+            FROM periode_akademik p
+            JOIN kelas k ON p.id_kelas = k.id_kelas
+            JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+            WHERE m.id_guru = ? AND k.status_arsip = 0 AND m.status_arsip = 0
+            ORDER BY p.status_aktif DESC, p.id_periode DESC
+            LIMIT 1
+        """, (id_guru,)).fetchone()
+
+        if p:
+            session["id_periode"] = p["id_periode"]
+            session["id_kelas"] = p["id_kelas"]
+            session["id_mata_pelajaran"] = p["id_mata_pelajaran"]
+            return ambil_periode(p["id_periode"])
+
+        return None
+    finally:
+        conn.close()
+
+
 # ==================================================
 # PEMERIKSAAN KESEHATAN APLIKASI
 # ==================================================
@@ -804,7 +934,13 @@ def kelola_kelas():
     daftar_kelas = conn.execute("""
         SELECT
             k.*,
-            COUNT(DISTINCT p.id_periode) AS jumlah_periode
+            COUNT(DISTINCT p.id_periode) AS jumlah_periode,
+            COALESCE((
+                SELECT COUNT(DISTINCT ps.id_siswa)
+                FROM periode_siswa ps
+                JOIN periode_akademik pa ON ps.id_periode = pa.id_periode
+                WHERE pa.id_kelas = k.id_kelas AND ps.status_aktif = 1
+            ), 0) AS jumlah_siswa
         FROM kelas k
         LEFT JOIN periode_akademik p
             ON k.id_kelas = p.id_kelas
@@ -850,15 +986,72 @@ def tambah_kelas():
     conn = get_db_connection()
 
     try:
-        conn.execute("""
+        cursor = conn.execute("""
             INSERT INTO kelas (
                 id_mata_pelajaran, nama_kelas
             )
             VALUES (?, ?)
+            RETURNING id_kelas
         """, (id_mata_pelajaran, nama_kelas))
+        id_kelas_baru = cursor.fetchone()["id_kelas"]
+
+        # Buat periode akademik awal otomatis agar kelas baru langsung dapat digunakan
+        periode_sebelumnya = conn.execute("""
+            SELECT p.tahun_ajaran, p.semester
+            FROM periode_akademik p
+            JOIN kelas k ON p.id_kelas = k.id_kelas
+            JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+            WHERE m.id_guru = ?
+            ORDER BY p.id_periode DESC
+            LIMIT 1
+        """, (session["id_guru"],)).fetchone()
+
+        tahun_ajaran = periode_sebelumnya["tahun_ajaran"] if periode_sebelumnya else "2026/2027"
+        semester = periode_sebelumnya["semester"] if periode_sebelumnya else "Ganjil"
+
+        cursor_p = conn.execute("""
+            INSERT INTO periode_akademik (
+                id_kelas,
+                tahun_ajaran,
+                semester,
+                status_aktif,
+                status_terkunci
+            )
+            VALUES (?, ?, ?, 1, 0)
+            RETURNING id_periode
+        """, (id_kelas_baru, tahun_ajaran, semester))
+        id_periode_baru = cursor_p.fetchone()["id_periode"]
+
+        # Inisialisasi pengaturan penilaian standar
+        conn.execute("""
+            INSERT INTO pengaturan_penilaian (
+                id_periode,
+                bobot_sudah_diatur,
+                grade_sudah_diatur,
+                bobot_tugas,
+                bobot_uts,
+                bobot_uas,
+                bobot_kehadiran,
+                metode_tugas,
+                jumlah_tugas,
+                batas_a,
+                batas_b,
+                batas_c,
+                batas_d,
+                batas_e,
+                kkm
+            )
+            VALUES (?, 1, 1, 30, 25, 30, 15, 'satu_per_satu', 0, 85, 75, 65, 50, 0, 75)
+        """, (id_periode_baru,))
 
         conn.commit()
-        flash("Kelas berhasil ditambahkan.")
+
+        # Update session langsung ke kelas dan periode baru
+        session["id_mata_pelajaran"] = id_mata_pelajaran
+        session["id_kelas"] = id_kelas_baru
+        session["id_periode"] = id_periode_baru
+
+        flash(f"Kelas {nama_kelas} berhasil ditambahkan dan langsung aktif.")
 
     except IntegrityError:
         flash("Nama kelas tersebut sudah digunakan.")
@@ -1072,6 +1265,10 @@ def pilih_kelas(id_kelas):
 
     if periode:
         session["id_periode"] = periode["id_periode"]
+
+    tujuan = request.args.get("tujuan")
+    if tujuan == "siswa":
+        return redirect(url_for("daftar_siswa"))
 
     return redirect(url_for("kelola_kelas"))
 
@@ -1401,10 +1598,14 @@ def daftar_siswa():
         sumber = "dashboard"
 
     periode = ambil_periode(id_periode)
+    if not periode:
+        periode = pastikan_periode_aktif()
+        if periode:
+            id_periode = periode["id_periode"]
 
     if not periode:
-        flash("Pilih periode akademik terlebih dahulu.")
-        return redirect(url_for("dashboard"))
+        flash("Pilih atau buat kelas dan periode akademik terlebih dahulu.")
+        return redirect(url_for("kelola_kelas"))
 
     kelas = ambil_kelas(periode["id_kelas"])
 
@@ -1465,10 +1666,14 @@ def tambah_siswa():
     id_periode = session.get("id_periode")
 
     periode = ambil_periode(id_periode)
+    if not periode:
+        periode = pastikan_periode_aktif()
+        if periode:
+            id_periode = periode["id_periode"]
 
     if not periode:
-        flash("Pilih periode akademik terlebih dahulu.")
-        return redirect(url_for("dashboard"))
+        flash("Pilih atau buat kelas dan periode akademik terlebih dahulu.")
+        return redirect(url_for("kelola_kelas"))
 
     kelas = ambil_kelas(periode["id_kelas"])
 
@@ -2024,22 +2229,49 @@ def hapus_siswa(id_siswa):
 @login_required
 def pengaturan_bobot():
     id_periode = session.get("id_periode")
+    periode = ambil_periode(id_periode)
 
     # Menentukan asal halaman.
     sumber = request.args.get("sumber", "dashboard")
-
     if sumber not in ["dashboard", "data_siswa"]:
         sumber = "dashboard"
 
-    periode = ambil_periode(id_periode)
+    if not periode:
+        # Coba auto-resolusi periode aktif milik guru
+        conn = get_db_connection()
+        p_fallback = conn.execute("""
+            SELECT p.*, k.id_mata_pelajaran
+            FROM periode_akademik p
+            JOIN kelas k ON p.id_kelas = k.id_kelas
+            JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+            WHERE m.id_guru = ?
+              AND k.status_arsip = 0
+              AND m.status_arsip = 0
+            ORDER BY p.status_aktif DESC, p.id_periode DESC
+            LIMIT 1
+        """, (session["id_guru"],)).fetchone()
+        conn.close()
+
+        if p_fallback:
+            session["id_periode"] = p_fallback["id_periode"]
+            session["id_kelas"] = p_fallback["id_kelas"]
+            session["id_mata_pelajaran"] = p_fallback["id_mata_pelajaran"]
+            periode = ambil_periode(p_fallback["id_periode"])
+            id_periode = p_fallback["id_periode"]
 
     if not periode:
-        flash("Pilih periode akademik terlebih dahulu.")
-        return redirect(url_for("dashboard"))
+        return render_template(
+            "penilaian/pengaturan_bobot.html",
+            sumber=sumber,
+            periode=None,
+            pengaturan=None,
+            pengaturan_pertama=True,
+            belum_ada_periode=True
+        )
 
-    if periode["status_terkunci"] == 1:
-        flash("Periode ini sudah terkunci.")
-        return redirect(url_for("dashboard"))
+    if request.method == "POST" and periode["status_terkunci"] == 1:
+        flash("Periode ini sudah terkunci dan tidak dapat diubah.")
+        return redirect(url_for("pengaturan_bobot", sumber=sumber))
 
     conn = get_db_connection()
 
@@ -2483,10 +2715,14 @@ def dashboard():
 def halaman_penilaian():
     id_periode = session.get("id_periode")
     periode = ambil_periode(id_periode)
+    if not periode:
+        periode = pastikan_periode_aktif()
+        if periode:
+            id_periode = periode["id_periode"]
 
     if not periode:
-        flash("Pilih periode akademik terlebih dahulu.")
-        return redirect(url_for("dashboard"))
+        flash("Pilih atau buat kelas dan periode akademik terlebih dahulu.")
+        return redirect(url_for("kelola_kelas"))
 
     conn = get_db_connection()
 
@@ -2940,10 +3176,14 @@ def halaman_penilaian():
 def rekapitulasi_nilai():
     id_periode = session.get("id_periode")
     periode = ambil_periode(id_periode)
+    if not periode:
+        periode = pastikan_periode_aktif()
+        if periode:
+            id_periode = periode["id_periode"]
 
     if not periode:
-        flash("Pilih periode akademik terlebih dahulu.")
-        return redirect(url_for("dashboard"))
+        flash("Pilih atau buat kelas dan periode akademik terlebih dahulu.")
+        return redirect(url_for("kelola_kelas"))
 
     conn = get_db_connection()
 
@@ -3038,6 +3278,10 @@ def rekapitulasi_nilai():
         # HITUNG HASIL REKAPITULASI
         hasil_rekap = []
         daftar_nilai_lengkap = []
+        semua_nilai_tugas = []
+        semua_nilai_uts = []
+        semua_nilai_uas = []
+        semua_nilai_kehadiran = []
 
         jumlah_tuntas = 0
         jumlah_belum_tuntas = 0
@@ -3080,6 +3324,15 @@ def rekapitulasi_nilai():
             nilai_kehadiran = (
                 komponen["nilai_kehadiran"] if komponen else None
             )
+
+            if nilai_tugas_akhir is not None:
+                semua_nilai_tugas.append(nilai_tugas_akhir)
+            if nilai_uts is not None:
+                semua_nilai_uts.append(nilai_uts)
+            if nilai_uas is not None:
+                semua_nilai_uas.append(nilai_uas)
+            if nilai_kehadiran is not None:
+                semua_nilai_kehadiran.append(nilai_kehadiran)
 
             lengkap = all(
                 nilai is not None
@@ -3127,6 +3380,10 @@ def rekapitulasi_nilai():
             data_siswa = {
                 "no_absen": siswa["no_absen"],
                 "nama_siswa": siswa["nama_siswa"],
+                "nilai_tugas": nilai_tugas_akhir,
+                "nilai_uts": nilai_uts,
+                "nilai_uas": nilai_uas,
+                "nilai_kehadiran": nilai_kehadiran,
                 "nilai_akhir": nilai_akhir,
                 "grade": grade,
                 "status_kkm": status_kkm
@@ -3163,18 +3420,94 @@ def rekapitulasi_nilai():
             if daftar_nilai_lengkap else None
         )
 
+        # Hitung rata-rata per komponen
+        rata_tugas = (sum(semua_nilai_tugas) / len(semua_nilai_tugas)) if semua_nilai_tugas else None
+        rata_uts = (sum(semua_nilai_uts) / len(semua_nilai_uts)) if semua_nilai_uts else None
+        rata_uas = (sum(semua_nilai_uas) / len(semua_nilai_uas)) if semua_nilai_uas else None
+        rata_kehadiran = (sum(semua_nilai_kehadiran) / len(semua_nilai_kehadiran)) if semua_nilai_kehadiran else None
+
+        kkm = pengaturan["kkm"] if (pengaturan and pengaturan["kkm"] is not None) else 75
+        batas_a = pengaturan["batas_a"] if (pengaturan and pengaturan["batas_a"] is not None) else 85
+        batas_b = pengaturan["batas_b"] if (pengaturan and pengaturan["batas_b"] is not None) else 75
+        batas_c = pengaturan["batas_c"] if (pengaturan and pengaturan["batas_c"] is not None) else 65
+        batas_d = pengaturan["batas_d"] if (pengaturan and pengaturan["batas_d"] is not None) else 50
+
+        if rata_rata_kelas is not None:
+            if rata_rata_kelas >= batas_a:
+                kategori_rata_rata = "A"
+            elif rata_rata_kelas >= batas_b:
+                kategori_rata_rata = "B"
+            elif rata_rata_kelas >= batas_c:
+                kategori_rata_rata = "C"
+            elif rata_rata_kelas >= batas_d:
+                kategori_rata_rata = "D"
+            else:
+                kategori_rata_rata = "E"
+        else:
+            kategori_rata_rata = "-"
+
+        # Persentase ketuntasan
+        jumlah_belum_tuntas_tampil = max(0, jumlah_siswa - jumlah_tuntas)
+        persen_tuntas = (jumlah_tuntas / jumlah_siswa * 100) if jumlah_siswa else 0
+        persen_belum_tuntas = (jumlah_belum_tuntas_tampil / jumlah_siswa * 100) if jumlah_siswa else 0
+
+        # Distribusi Grade
+        distribusi_grade = {
+            "A": sum(1 for s in daftar_nilai_lengkap if s["grade"] == "A"),
+            "B": sum(1 for s in daftar_nilai_lengkap if s["grade"] == "B"),
+            "C": sum(1 for s in daftar_nilai_lengkap if s["grade"] == "C"),
+            "D": sum(1 for s in daftar_nilai_lengkap if s["grade"] == "D"),
+            "E": sum(1 for s in daftar_nilai_lengkap if s["grade"] == "E"),
+        }
+
+        # Distribusi Rentang Nilai Akhir
+        distribusi_rentang = {
+            "0-49": sum(1 for s in daftar_nilai_lengkap if s["nilai_akhir"] < 50),
+            "50-59": sum(1 for s in daftar_nilai_lengkap if 50 <= s["nilai_akhir"] < 60),
+            "60-69": sum(1 for s in daftar_nilai_lengkap if 60 <= s["nilai_akhir"] < 70),
+            "70-79": sum(1 for s in daftar_nilai_lengkap if 70 <= s["nilai_akhir"] < 80),
+            "80-89": sum(1 for s in daftar_nilai_lengkap if 80 <= s["nilai_akhir"] < 90),
+            "90-100": sum(1 for s in daftar_nilai_lengkap if 90 <= s["nilai_akhir"] <= 100),
+        }
+
+        kelas_info = conn.execute("""
+            SELECT k.nama_kelas, m.nama_mata_pelajaran
+            FROM kelas k
+            JOIN mata_pelajaran m ON k.id_mata_pelajaran = m.id_mata_pelajaran
+            WHERE k.id_kelas = ?
+        """, (periode["id_kelas"],)).fetchone()
+
+        daftar_periode_kelas = conn.execute("""
+            SELECT id_periode, semester, tahun_ajaran, status_aktif
+            FROM periode_akademik
+            WHERE id_kelas = ?
+            ORDER BY id_periode DESC
+        """, (periode["id_kelas"],)).fetchall()
+
         return render_template(
             "rekapitulasi/rekapitulasi.html",
             periode=periode,
+            kelas_info=kelas_info,
+            daftar_periode_kelas=daftar_periode_kelas,
             hasil_rekap=hasil_rekap,
             jumlah_siswa=jumlah_siswa,
             jumlah_nilai_lengkap=jumlah_nilai_lengkap,
             jumlah_tuntas=jumlah_tuntas,
-            jumlah_belum_tuntas=jumlah_belum_tuntas,
+            jumlah_belum_tuntas=jumlah_belum_tuntas_tampil,
             jumlah_belum_lengkap=jumlah_belum_lengkap,
+            persen_tuntas=persen_tuntas,
+            persen_belum_tuntas=persen_belum_tuntas,
             rata_rata_kelas=rata_rata_kelas,
+            kategori_rata_rata=kategori_rata_rata,
             siswa_tertinggi=siswa_tertinggi,
-            siswa_terendah=siswa_terendah
+            siswa_terendah=siswa_terendah,
+            kkm=kkm,
+            rata_tugas=rata_tugas,
+            rata_uts=rata_uts,
+            rata_uas=rata_uas,
+            rata_kehadiran=rata_kehadiran,
+            distribusi_grade=distribusi_grade,
+            distribusi_rentang=distribusi_rentang
         )
 
     finally:

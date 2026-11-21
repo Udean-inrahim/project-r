@@ -1,140 +1,775 @@
-{% extends "layout.html" %}
-
-{% block title %}Rekapitulasi Nilai | GRADE MASTER{% endblock %}
+{% extends "layout.html" %}
+
+{% block title %}Rekapitulasi Nilai | GRADE MASTER{% endblock %}
 {% block breadcrumb %}Rekapitulasi Nilai{% endblock %}
 
-{% block content %}
-<div class="penugasan-container">
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/rekapitulasi.css') }}">
+{% endblock %}
 
-    <header class="halaman-header">
-        <div>
-            <h1>Rekapitulasi Nilai</h1>
-            <p>Ringkasan hasil penilaian akademik siswa.</p>
+{% block content %}
+<div class="rekap-container">
+
+    <!-- Header Section -->
+    <header class="rekap-header">
+        <div class="rekap-header-left">
+            <h1 class="rekap-title">Rekapitulasi Nilai</h1>
+            <p class="rekap-subtitle">
+                {{ kelas_info.nama_mata_pelajaran or mapel_nama or 'Mata Pelajaran' }} &bull;
+                Kelas {{ kelas_info.nama_kelas or kelas_nama or 'Kelas' }} &bull;
+                {{ periode.semester }} {{ periode.tahun_ajaran }}
+            </p>
         </div>
 
-        <a href="{{ url_for('dashboard') }}" class="btn-batal">
-            Kembali
-        </a>
+        <div class="rekap-header-right">
+            <!-- Dropdown Pilihan Periode -->
+            <div class="rekap-dropdown-wrapper">
+                <button type="button" class="btn-period-select" id="btnPeriodSelect" aria-haspopup="true" aria-expanded="false">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>{{ periode.semester }} {{ periode.tahun_ajaran }}</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+                {% if daftar_periode_kelas and daftar_periode_kelas|length > 1 %}
+                <div class="period-menu" id="periodMenu">
+                    {% for p in daftar_periode_kelas %}
+                    <a href="{{ url_for('pilih_periode', id_periode=p.id_periode) }}" class="period-item {% if p.id_periode == periode.id_periode %}active{% endif %}">
+                        {{ p.semester }} {{ p.tahun_ajaran }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Tombol Unduh Laporan -->
+            <div class="rekap-download-wrapper">
+                <button type="button" class="btn-download-report" id="btnDownloadReport" aria-haspopup="true" aria-expanded="false">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Unduh Laporan</span>
+                </button>
+                <div class="download-menu" id="downloadMenu">
+                    <button type="button" class="download-item" onclick="window.print()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        <span>Cetak / Simpan PDF</span>
+                    </button>
+                    <button type="button" class="download-item" onclick="eksporDataCSV()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <span>Unduh Data Excel / CSV</span>
+                    </button>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <section class="tambah-kelas">
-        <h3>Periode Akademik</h3>
-        <p>{{ periode.tahun_ajaran }} - {{ periode.semester }}</p>
-    </section>
-
-    <section class="daftar-penugasan">
-        <h2>Ringkasan Kelas</h2>
-
-        <div class="rekap-grid">
-
-            <div class="rekap-card">
-                <h3>Jumlah Siswa</h3>
-                <p>{{ jumlah_siswa }}</p>
+    <!-- Top 6 Stat Cards Grid -->
+    <section class="stat-cards-grid">
+        <!-- 1. Jumlah Siswa -->
+        <div class="stat-card">
+            <div class="stat-card-label">Jumlah Siswa</div>
+            <div class="stat-card-body">
+                <div class="stat-icon-circle icon-blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <div class="stat-card-text">
+                    <div class="stat-value">{{ jumlah_siswa }}</div>
+                    <div class="stat-subtext">Siswa</div>
+                </div>
             </div>
+        </div>
 
-            <div class="rekap-card">
-                <h3>Rata-rata Kelas</h3>
-                <p>
-                    {% if rata_rata_kelas is not none %}
-                        {{ "%.2f"|format(rata_rata_kelas) }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </p>
+        <!-- 2. Rata-rata Nilai -->
+        <div class="stat-card">
+            <div class="stat-card-label">Rata-rata Nilai</div>
+            <div class="stat-card-body">
+                <div class="stat-icon-circle icon-green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-card-text">
+                    <div class="stat-value">
+                        {% if rata_rata_kelas is not none %}{{ "%.2f"|format(rata_rata_kelas)|replace('.', ',') }}{% else %}-{% endif %}
+                    </div>
+                    <div class="stat-subtext">Kategori {{ kategori_rata_rata }}</div>
+                </div>
             </div>
+        </div>
 
-            <div class="rekap-card">
-                <h3>Nilai Tertinggi</h3>
-                {% if siswa_tertinggi %}
-                    <p>{{ "%.2f"|format(siswa_tertinggi.nilai_akhir) }}</p>
-                    <small>{{ siswa_tertinggi.nama_siswa }}</small>
-                {% else %}
-                    <p>-</p>
-                {% endif %}
+        <!-- 3. Nilai Tertinggi -->
+        <div class="stat-card">
+            <div class="stat-card-label">Nilai Tertinggi</div>
+            <div class="stat-card-body">
+                <div class="stat-icon-circle icon-amber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                </div>
+                <div class="stat-card-text">
+                    <div class="stat-value">
+                        {% if siswa_tertinggi %}{{ "%.0f"|format(siswa_tertinggi.nilai_akhir) }}{% else %}-{% endif %}
+                    </div>
+                    <div class="stat-subtext" title="{{ siswa_tertinggi.nama_siswa if siswa_tertinggi else '' }}">
+                        Oleh: {{ (siswa_tertinggi.nama_siswa if siswa_tertinggi else '-')|truncate(14, True, '..') }}
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="rekap-card">
-                <h3>Nilai Terendah</h3>
-                {% if siswa_terendah %}
-                    <p>{{ "%.2f"|format(siswa_terendah.nilai_akhir) }}</p>
-                    <small>{{ siswa_terendah.nama_siswa }}</small>
-                {% else %}
-                    <p>-</p>
-                {% endif %}
+        <!-- 4. Nilai Terendah -->
+        <div class="stat-card">
+            <div class="stat-card-label">Nilai Terendah</div>
+            <div class="stat-card-body">
+                <div class="stat-icon-circle icon-red">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                        <polyline points="17 18 23 18 23 12"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-card-text">
+                    <div class="stat-value">
+                        {% if siswa_terendah %}{{ "%.0f"|format(siswa_terendah.nilai_akhir) }}{% else %}-{% endif %}
+                    </div>
+                    <div class="stat-subtext" title="{{ siswa_terendah.nama_siswa if siswa_terendah else '' }}">
+                        Oleh: {{ (siswa_terendah.nama_siswa if siswa_terendah else '-')|truncate(14, True, '..') }}
+                    </div>
+                </div>
             </div>
+        </div>
 
+        <!-- 5. Siswa Tuntas -->
+        <div class="stat-card">
+            <div class="stat-card-label">Siswa Tuntas (&ge; {{ kkm|int if kkm == kkm|int else kkm }})</div>
+            <div class="stat-card-body">
+                <div class="stat-icon-circle icon-solid-green">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-card-text">
+                    <div class="stat-value">{{ jumlah_tuntas }}</div>
+                    <div class="stat-subtext">{{ "%.2f"|format(persen_tuntas)|replace('.', ',') }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Siswa Belum Tuntas -->
+        <div class="stat-card">
+            <div class="stat-card-label">Siswa Belum Tuntas</div>
+            <div class="stat-card-body">
+                <div class="stat-icon-circle icon-solid-red">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </div>
+                <div class="stat-card-text">
+                    <div class="stat-value">{{ jumlah_belum_tuntas }}</div>
+                    <div class="stat-subtext">{{ "%.2f"|format(persen_belum_tuntas)|replace('.', ',') }}%</div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="daftar-penugasan">
-        <h2>Status Ketuntasan Minimum</h2>
-
-        <div class="rekap-grid">
-
-            <div class="rekap-card">
-                <h3>Tuntas</h3>
-                <p>{{ jumlah_tuntas }} siswa</p>
+    <!-- 2x2 Charts Grid -->
+    <section class="charts-2x2-grid">
+        <!-- Chart 1: Distribusi Grade -->
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h2 class="chart-card-title">Distribusi Grade</h2>
+                <p class="chart-card-subtitle">Jumlah siswa berdasarkan kategori nilai</p>
             </div>
-
-            <div class="rekap-card">
-                <h3>Belum Tuntas</h3>
-                <p>{{ jumlah_belum_tuntas }} siswa</p>
+            <div class="chart-canvas-wrapper">
+                <canvas id="chartDistribusiGrade"></canvas>
             </div>
+        </div>
 
-            <div class="rekap-card">
-                <h3>Belum Lengkap</h3>
-                <p>{{ jumlah_belum_lengkap }} siswa</p>
+        <!-- Chart 2: Ketuntasan Belajar -->
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h2 class="chart-card-title">Ketuntasan Belajar</h2>
+                <p class="chart-card-subtitle">Perbandingan siswa tuntas dan belum tuntas</p>
             </div>
+            <div class="donut-chart-container">
+                <div class="donut-canvas-wrapper">
+                    <canvas id="chartKetuntasan"></canvas>
+                </div>
+                <div class="donut-custom-legend">
+                    <div class="legend-row">
+                        <span class="legend-dot dot-green"></span>
+                        <div class="legend-text">
+                            <div class="legend-title">Tuntas (&ge; {{ kkm|int if kkm == kkm|int else kkm }})</div>
+                            <div class="legend-sub">{{ jumlah_tuntas }} siswa ({{ "%.2f"|format(persen_tuntas)|replace('.', ',') }}%)</div>
+                        </div>
+                    </div>
+                    <div class="legend-row">
+                        <span class="legend-dot dot-red"></span>
+                        <div class="legend-text">
+                            <div class="legend-title">Belum Tuntas (&lt; {{ kkm|int if kkm == kkm|int else kkm }})</div>
+                            <div class="legend-sub">{{ jumlah_belum_tuntas }} siswa ({{ "%.2f"|format(persen_belum_tuntas)|replace('.', ',') }}%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Chart 3: Perbandingan Rata-rata Nilai per Komponen -->
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h2 class="chart-card-title">Perbandingan Rata-rata Nilai per Komponen</h2>
+                <p class="chart-card-subtitle">Rata-rata nilai setiap komponen penilaian</p>
+            </div>
+            <div class="chart-canvas-wrapper">
+                <canvas id="chartKomponen"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 4: Distribusi Nilai Akhir -->
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h2 class="chart-card-title">Distribusi Nilai Akhir</h2>
+                <p class="chart-card-subtitle">Sebaran nilai akhir siswa</p>
+            </div>
+            <div class="chart-canvas-wrapper">
+                <canvas id="chartNilaiAkhir"></canvas>
+            </div>
         </div>
     </section>
 
-    <section class="daftar-penugasan">
-        <h2>Daftar Hasil Nilai Siswa</h2>
+    <!-- Bottom Notice KKM -->
+    <div class="rekap-kkm-note">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>KKM (Kriteria Ketuntasan Minimal): {{ kkm|int if kkm == kkm|int else kkm }}</span>
+    </div>
+
+    <!-- Detail Table Section -->
+    <section class="rekap-table-card">
+        <div class="table-card-header">
+            <div>
+                <h2>Daftar Hasil Nilai Siswa</h2>
+                <p style="color: #64748b; font-size: 13px; margin: 3px 0 0 0;">Total {{ jumlah_siswa }} siswa terdaftar pada periode ini.</p>
+            </div>
+            <div class="table-card-search">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="cariSiswaRekap" placeholder="Cari nama atau no. absen..." autocomplete="off">
+            </div>
+        </div>
 
         {% if hasil_rekap %}
-        <div class="tabel-responsive">
-            <table>
+        <div style="overflow-x: auto;">
+            <table class="rekap-table" id="tabelHasilRekap">
                 <thead>
                     <tr>
-                        <th>Nomor Absen</th>
+                        <th style="width: 80px; text-align: center;">No. Absen</th>
                         <th>Nama Siswa</th>
-                        <th>Nilai Akhir</th>
-                        <th>Predikat</th>
-                        <th>Status Ketuntasan</th>
+                        <th style="text-align: center;">Tugas</th>
+                        <th style="text-align: center;">UTS</th>
+                        <th style="text-align: center;">UAS</th>
+                        <th style="text-align: center;">Nilai Akhir</th>
+                        <th style="text-align: center;">Predikat</th>
+                        <th style="text-align: center;">Status</th>
                     </tr>
                 </thead>
-
                 <tbody>
-                    {% for siswa in hasil_rekap %}
+                    {% for s in hasil_rekap %}
                     <tr>
-                        <td data-label="Nomor Absen">{{ siswa.no_absen }}</td>
-                        <td data-label="Nama Siswa">{{ siswa.nama_siswa }}</td>
-
-                        <td data-label="Nilai Akhir">
-                            {% if siswa.nilai_akhir is not none %}
-                                {{ "%.2f"|format(siswa.nilai_akhir) }}
+                        <td style="text-align: center; color: #64748b;">{{ s.no_absen }}</td>
+                        <td style="font-weight: 600; color: #0f172a;">{{ s.nama_siswa }}</td>
+                        <td style="text-align: center;">
+                            {% if s.nilai_tugas is not none %}{{ "%.2f"|format(s.nilai_tugas)|replace('.', ',') }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if s.nilai_uts is not none %}{{ "%.2f"|format(s.nilai_uts)|replace('.', ',') }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if s.nilai_uas is not none %}{{ "%.2f"|format(s.nilai_uas)|replace('.', ',') }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center; font-weight: 700; color: #0f172a;">
+                            {% if s.nilai_akhir is not none %}{{ "%.2f"|format(s.nilai_akhir)|replace('.', ',') }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if s.grade %}
+                                <span class="badge-grade badge-grade-{{ s.grade }}">{{ s.grade }}</span>
                             {% else %}
-                                Belum lengkap
+                                -
                             {% endif %}
                         </td>
-
-                        <td data-label="Predikat">{{ siswa.grade or "-" }}</td>
-
-                        <td data-label="Status Ketuntasan">{{ siswa.status_kkm or "Belum dihitung" }}</td>
+                        <td style="text-align: center;">
+                            {% if s.status_kkm == 'Tuntas' %}
+                                <span class="badge-status status-tuntas">Tuntas</span>
+                            {% elif s.status_kkm == 'Belum Tuntas' %}
+                                <span class="badge-status status-belum-tuntas">Belum Tuntas</span>
+                            {% else %}
+                                <span class="badge-status status-belum-lengkap">Belum Lengkap</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
         {% else %}
-        <div class="kosong">
-            <h3>Belum Ada Siswa</h3>
-            <p>Belum ada siswa aktif pada periode ini.</p>
+        <div style="padding: 24px; text-align: center; color: #64748b;">
+            Belum ada data siswa aktif pada periode ini.
         </div>
         {% endif %}
     </section>
 
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Chart.js local script -->
+<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+
+<script>
+(function() {
+    // -------------------------------------------------------------
+    // Dropdown toggles
+    // -------------------------------------------------------------
+    const btnPeriod = document.getElementById('btnPeriodSelect');
+    const periodMenu = document.getElementById('periodMenu');
+    if (btnPeriod && periodMenu) {
+        btnPeriod.addEventListener('click', function(e) {
+            e.stopPropagation();
+            periodMenu.classList.toggle('show');
+            if (downloadMenu) downloadMenu.classList.remove('show');
+        });
+    }
+
+    const btnDownload = document.getElementById('btnDownloadReport');
+    const downloadMenu = document.getElementById('downloadMenu');
+    if (btnDownload && downloadMenu) {
+        btnDownload.addEventListener('click', function(e) {
+            e.stopPropagation();
+            downloadMenu.classList.toggle('show');
+            if (periodMenu) periodMenu.classList.remove('show');
+        });
+    }
+
+    document.addEventListener('click', function() {
+        if (periodMenu) periodMenu.classList.remove('show');
+        if (downloadMenu) downloadMenu.classList.remove('show');
+    });
+
+    // -------------------------------------------------------------
+    // Filter pencarian tabel siswa
+    // -------------------------------------------------------------
+    const inputCari = document.getElementById('cariSiswaRekap');
+    const tabel = document.getElementById('tabelHasilRekap');
+    if (inputCari && tabel) {
+        inputCari.addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            const rows = tabel.querySelectorAll('tbody tr');
+            rows.forEach(function(row) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Ekspor CSV
+    // -------------------------------------------------------------
+    window.eksporDataCSV = function() {
+        const rows = [];
+        rows.push(['No. Absen', 'Nama Siswa', 'Nilai Tugas', 'Nilai UTS', 'Nilai UAS', 'Nilai Akhir', 'Predikat', 'Status Ketuntasan']);
+
+        {% for s in hasil_rekap %}
+        rows.push([
+            "{{ s.no_absen }}",
+            "{{ s.nama_siswa|replace('\"', '\"\"') }}",
+            "{{ '%.2f'|format(s.nilai_tugas)|replace('.', ',') if s.nilai_tugas is not none else '-' }}",
+            "{{ '%.2f'|format(s.nilai_uts)|replace('.', ',') if s.nilai_uts is not none else '-' }}",
+            "{{ '%.2f'|format(s.nilai_uas)|replace('.', ',') if s.nilai_uas is not none else '-' }}",
+            "{{ '%.2f'|format(s.nilai_akhir)|replace('.', ',') if s.nilai_akhir is not none else '-' }}",
+            "{{ s.grade or '-' }}",
+            "{{ s.status_kkm or 'Belum Lengkap' }}"
+        ]);
+        {% endfor %}
+
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+        rows.forEach(function(rowArray) {
+            let row = rowArray.map(item => `"${item}"`).join(";");
+            csvContent += row + "\r\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "Rekapitulasi_Nilai_{{ kelas_info.nama_kelas or 'Kelas' }}_{{ periode.semester }}_{{ periode.tahun_ajaran }}.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    // -------------------------------------------------------------
+    // Inisialisasi Chart.js
+    // -------------------------------------------------------------
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js gagal dimuat.');
+        return;
+    }
+
+    // Font default
+    Chart.defaults.font.family = "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#64748b';
+
+    // Plugin 1: Tampilkan angka di atas batang/titik
+    const topLabelsPlugin = {
+        id: 'topLabelsPlugin',
+        afterDatasetsDraw(chart) {
+            const { ctx, data } = chart;
+            ctx.save();
+            ctx.font = '600 11px Inter, sans-serif';
+            ctx.fillStyle = '#334155';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                meta.data.forEach((element, index) => {
+                    const val = dataset.data[index];
+                    if (val !== undefined && val !== null) {
+                        const formatted = typeof val === 'number' && val % 1 !== 0 
+                            ? val.toFixed(2).replace('.', ',') 
+                            : val;
+                        const yPos = element.y - 4;
+                        ctx.fillText(formatted, element.x, yPos);
+                    }
+                });
+            });
+            ctx.restore();
+        }
+    };
+
+    // Plugin 2: Teks di tengah Donut Chart (Jumlah Siswa)
+    const donutCenterTextPlugin = {
+        id: 'donutCenterTextPlugin',
+        beforeDraw(chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const { ctx, width, height } = chart;
+            ctx.save();
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Angka besar
+            ctx.font = '800 24px Inter, sans-serif';
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText("{{ jumlah_siswa }}", centerX, centerY - 8);
+
+            // Subteks "Siswa"
+            ctx.font = '500 12px Inter, sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText("Siswa", centerX, centerY + 14);
+
+            ctx.restore();
+        }
+    };
+
+    // =============================================================
+    // 1. Chart: Distribusi Grade
+    // =============================================================
+    const ctxGrade = document.getElementById('chartDistribusiGrade');
+    if (ctxGrade) {
+        const dataGradeValues = [
+            {{ distribusi_grade.A }},
+            {{ distribusi_grade.B }},
+            {{ distribusi_grade.C }},
+            {{ distribusi_grade.D }},
+            {{ distribusi_grade.E }}
+        ];
+        const maxGrade = Math.max(...dataGradeValues, 5);
+
+        new Chart(ctxGrade, {
+            type: 'bar',
+            data: {
+                labels: ['A', 'B', 'C', 'D', 'E'],
+                datasets: [{
+                    data: dataGradeValues,
+                    backgroundColor: [
+                        '#48bb78', // A (green)
+                        '#2563eb', // B (blue)
+                        '#eab308', // C (amber/yellow)
+                        '#f97316', // D (orange)
+                        '#ef4444'  // E (red)
+                    ],
+                    borderRadius: 3,
+                    borderSkipped: false,
+                    barPercentage: 0.55
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.parsed.y} Siswa`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Grade',
+                            color: '#64748b',
+                            font: { size: 11, weight: '500' }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Jumlah Siswa',
+                            color: '#64748b',
+                            font: { size: 11, weight: '500' }
+                        },
+                        beginAtZero: true,
+                        suggestedMax: maxGrade + 2,
+                        ticks: {
+                            stepSize: maxGrade > 10 ? 5 : 2,
+                            precision: 0
+                        },
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                }
+            },
+            plugins: [topLabelsPlugin]
+        });
+    }
+
+    // =============================================================
+    // 2. Chart: Ketuntasan Belajar (Donut)
+    // =============================================================
+    const ctxKetuntasan = document.getElementById('chartKetuntasan');
+    if (ctxKetuntasan) {
+        new Chart(ctxKetuntasan, {
+            type: 'doughnut',
+            data: {
+                labels: ['Tuntas', 'Belum Tuntas'],
+                datasets: [{
+                    data: [{{ jumlah_tuntas }}, {{ jumlah_belum_tuntas }}],
+                    backgroundColor: [
+                        '#48bb78', // Green
+                        '#ef4444'  // Red/Coral
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const total = {{ jumlah_siswa }};
+                                const val = context.parsed;
+                                const pct = total > 0 ? ((val / total) * 100).toFixed(2).replace('.', ',') : 0;
+                                return ` ${context.label}: ${val} siswa (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [donutCenterTextPlugin]
+        });
+    }
+
+    // =============================================================
+    // 3. Chart: Perbandingan Rata-rata Nilai per Komponen (Line / Area)
+    // =============================================================
+    const ctxKomponen = document.getElementById('chartKomponen');
+    if (ctxKomponen) {
+        const valTugas = {% if rata_tugas is not none %}{{ "%.2f"|format(rata_tugas) }}{% else %}0{% endif %};
+        const valUTS = {% if rata_uts is not none %}{{ "%.2f"|format(rata_uts) }}{% else %}0{% endif %};
+        const valUAS = {% if rata_uas is not none %}{{ "%.2f"|format(rata_uas) }}{% else %}0{% endif %};
+        const valAkhir = {% if rata_rata_kelas is not none %}{{ "%.2f"|format(rata_rata_kelas) }}{% else %}0{% endif %};
+
+        // Buat gradien background di canvas
+        const chartCtx = ctxKomponen.getContext('2d');
+        const gradientBg = chartCtx.createLinearGradient(0, 0, 0, 220);
+        gradientBg.addColorStop(0, 'rgba(37, 99, 235, 0.16)');
+        gradientBg.addColorStop(1, 'rgba(37, 99, 235, 0.01)');
+
+        new Chart(ctxKomponen, {
+            type: 'line',
+            data: {
+                labels: ['Tugas', 'UTS', 'UAS', 'Nilai Akhir'],
+                datasets: [{
+                    data: [valTugas, valUTS, valUAS, valAkhir],
+                    borderColor: '#2563eb',
+                    backgroundColor: gradientBg,
+                    fill: true,
+                    tension: 0.1,
+                    borderWidth: 2,
+                    pointRadius: 4.5,
+                    pointBackgroundColor: '#2563eb',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` Rata-rata: ${context.parsed.y.toFixed(2).replace('.', ',')}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Komponen Penilaian',
+                            color: '#64748b',
+                            font: { size: 11, weight: '500' }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Nilai',
+                            color: '#64748b',
+                            font: { size: 11, weight: '500' }
+                        },
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 25
+                        },
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                }
+            },
+            plugins: [topLabelsPlugin]
+        });
+    }
+
+    // =============================================================
+    // 4. Chart: Distribusi Nilai Akhir (Histogram Batang)
+    // =============================================================
+    const ctxNilaiAkhir = document.getElementById('chartNilaiAkhir');
+    if (ctxNilaiAkhir) {
+        const dataRentangValues = [
+            {{ distribusi_rentang['0-49'] }},
+            {{ distribusi_rentang['50-59'] }},
+            {{ distribusi_rentang['60-69'] }},
+            {{ distribusi_rentang['70-79'] }},
+            {{ distribusi_rentang['80-89'] }},
+            {{ distribusi_rentang['90-100'] }}
+        ];
+        const maxRentang = Math.max(...dataRentangValues, 6);
+
+        new Chart(ctxNilaiAkhir, {
+            type: 'bar',
+            data: {
+                labels: ['0 - 49', '50 - 59', '60 - 69', '70 - 79', '80 - 89', '90 - 100'],
+                datasets: [{
+                    data: dataRentangValues,
+                    backgroundColor: [
+                        '#ef4444', // 0-49 (red)
+                        '#f97316', // 50-59 (orange)
+                        '#eab308', // 60-69 (amber)
+                        '#2563eb', // 70-79 (blue)
+                        '#48bb78', // 80-89 (light green)
+                        '#166534'  // 90-100 (dark green)
+                    ],
+                    borderRadius: 3,
+                    borderSkipped: false,
+                    barPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.parsed.y} Siswa`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Rentang Nilai',
+                            color: '#64748b',
+                            font: { size: 11, weight: '500' }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Jumlah Siswa',
+                            color: '#64748b',
+                            font: { size: 11, weight: '500' }
+                        },
+                        beginAtZero: true,
+                        suggestedMax: maxRentang + 2,
+                        ticks: {
+                            stepSize: maxRentang > 10 ? 4 : 2,
+                            precision: 0
+                        },
+                        grid: {
+                            color: '#f1f5f9'
+                        }
+                    }
+                }
+            },
+            plugins: [topLabelsPlugin]
+        });
+    }
+})();
+</script>
 {% endblock %}
