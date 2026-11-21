@@ -319,6 +319,37 @@ def ambil_periode(id_periode):
     return data
 
 
+def ada_nilai_tersimpan(conn, kondisi, params):
+    """
+    Memeriksa apakah ada nilai siswa pada periode yang cocok dengan kondisi.
+
+    Dipakai sebelum penghapusan permanen supaya nilai tidak ikut terhapus
+    diam-diam lewat ON DELETE CASCADE.
+    """
+    baris = conn.execute(f"""
+        SELECT 1
+        FROM periode_akademik p
+        JOIN periode_siswa ps
+            ON ps.id_periode = p.id_periode
+        LEFT JOIN nilai_tugas nt
+            ON nt.id_periode_siswa = ps.id_periode_siswa
+        LEFT JOIN nilai_tugas_rata_rata ntr
+            ON ntr.id_periode_siswa = ps.id_periode_siswa
+        LEFT JOIN nilai_komponen nk
+            ON nk.id_periode_siswa = ps.id_periode_siswa
+        WHERE {kondisi}
+          AND (
+              nt.nilai IS NOT NULL
+              OR ntr.nilai IS NOT NULL
+              OR nk.nilai_uts IS NOT NULL
+              OR nk.nilai_uas IS NOT NULL
+              OR nk.nilai_kehadiran IS NOT NULL
+          )
+        LIMIT 1
+    """, params).fetchone()
+    return baris is not None
+
+
 def pastikan_periode_aktif():
     """
     Memastikan session memiliki id_periode yang valid milik guru yang login.
@@ -1028,6 +1059,19 @@ def hapus_mata_pelajaran(id_mata_pelajaran):
             flash("Mata pelajaran tidak ditemukan.")
             return redirect(url_for("daftar_mata_pelajaran"))
 
+        if ada_nilai_tersimpan(
+            conn,
+            "p.id_kelas IN ("
+            "SELECT id_kelas FROM kelas WHERE id_mata_pelajaran = ?"
+            ")",
+            (id_mata_pelajaran,),
+        ):
+            flash(
+                "Mata pelajaran tidak dihapus karena sudah memiliki nilai "
+                "tersimpan. Arsipkan mata pelajaran ini agar nilainya tetap utuh."
+            )
+            return redirect(url_for("daftar_mata_pelajaran"))
+
         conn.execute("""
             DELETE FROM mata_pelajaran
             WHERE id_mata_pelajaran = ?
@@ -1364,6 +1408,13 @@ def hapus_kelas(id_kelas):
             WHERE p.id_kelas = ?
         """, (id_kelas,)).fetchall()
 
+        if ada_nilai_tersimpan(conn, "p.id_kelas = ?", (id_kelas,)):
+            flash(
+                f"Kelas {nama_kelas} tidak dihapus karena sudah memiliki nilai "
+                "tersimpan. Arsipkan kelas ini agar nilainya tetap utuh."
+            )
+            return redirect(url_for("kelola_kelas"))
+
         # Menghapus riwayat perubahan kelas dan periodenya.
         conn.execute("""
             DELETE FROM riwayat_perubahan
@@ -1651,6 +1702,14 @@ def hapus_periode(id_periode):
     conn = get_db_connection()
 
     try:
+        if ada_nilai_tersimpan(conn, "p.id_periode = ?", (id_periode,)):
+            flash(
+                "Periode tidak dihapus karena sudah memiliki nilai tersimpan."
+            )
+            return redirect(
+                url_for("kelola_periode", id_kelas=id_kelas)
+            )
+
         # Hapus riwayat perubahan milik periode ini.
         conn.execute("""
             DELETE FROM riwayat_perubahan
@@ -2350,6 +2409,15 @@ def hapus_siswa(id_siswa):
 
         if not siswa:
             flash("Data siswa tidak ditemukan.")
+            return redirect(url_for("daftar_siswa"))
+
+        if ada_nilai_tersimpan(
+            conn, "ps.id_siswa = ?", (id_siswa,)
+        ):
+            flash(
+                "Data siswa tidak dihapus karena sudah memiliki nilai "
+                "tersimpan. Arsipkan siswa ini agar nilainya tetap utuh."
+            )
             return redirect(url_for("daftar_siswa"))
 
         roster = conn.execute("""

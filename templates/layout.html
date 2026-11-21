@@ -27,12 +27,13 @@
         {% endif %}
     {% endwith %}
 
+    <a class="skip-link" href="#main-content">Lewati ke konten utama</a>
     <div class="app-layout">
         <!-- Sidebar Navigation (Unified Dark Navy) -->
         {% include "components/sidebar.html" %}
 
         <!-- Main Content Area -->
-        <main class="main-content">
+        <main class="main-content" id="main-content">
             <!-- Topbar with Mobile Toggle, Breadcrumb & Notification -->
             <header class="main-topbar">
                 <div class="topbar-left">

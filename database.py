@@ -20,7 +20,27 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # Dipakai untuk menandai skema sudah versi terbaru, supaya
 # DDL tidak dijalankan ulang di setiap cold start Vercel.
-VERSI_SKEMA = 2
+VERSI_SKEMA = 3
+
+
+def migrasi_dasar(conn):
+    """Baseline skema lengkap untuk database baru."""
+    conn.execute(DDL)
+    conn.execute("""
+        UPDATE periode_akademik
+        SET status_terkunci = 1
+        WHERE status_aktif = 0
+    """)
+
+
+def migrasi_ke_3(conn):
+    """Migrasi ke versi 3: placeholder untuk langkah skema lanjutan."""
+    return
+
+
+MIGRASI = (
+    (3, migrasi_ke_3),
+)
 
 
 def muat_env():
@@ -406,31 +426,33 @@ def buat_tabel():
             )
         """)
 
-        versi = conn.execute("""
+        versi_row = conn.execute("""
             SELECT versi
             FROM schema_meta
             ORDER BY versi DESC
             LIMIT 1
         """).fetchone()
 
-        if versi and versi["versi"] >= VERSI_SKEMA:
+        versi = versi_row["versi"] if versi_row else 0
+
+        if versi >= VERSI_SKEMA:
             conn.commit()
             return
 
-        conn.execute(DDL)
+        if versi == 0:
+            migrasi_dasar(conn)
+            versi = 2
 
-        # Semua periode yang tidak aktif dianggap terkunci.
-        conn.execute("""
-            UPDATE periode_akademik
-            SET status_terkunci = 1
-            WHERE status_aktif = 0
-        """)
+        for target_versi, fungsi in MIGRASI:
+            if versi < target_versi:
+                fungsi(conn)
+                versi = target_versi
 
         conn.execute("DELETE FROM schema_meta")
-        conn.execute("""
-            INSERT INTO schema_meta (versi)
-            VALUES (?)
-        """, (VERSI_SKEMA,))
+        conn.execute(
+            "INSERT INTO schema_meta (versi) VALUES (?)",
+            (VERSI_SKEMA,),
+        )
 
         conn.commit()
 
