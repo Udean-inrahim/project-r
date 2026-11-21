@@ -1,5 +1,6 @@
 import os
 import secrets
+import time
 from datetime import date
 from functools import wraps
 
@@ -85,6 +86,36 @@ except Exception as kesalahan:  # noqa: BLE001
 # ==================================================
 # FUNGSI BANTU
 # ==================================================
+
+BATAS_PERCOBAAN_LOGIN = 5
+JEDA_PERCOBAAN_LOGIN = 15 * 60
+_percobaan_login = {}
+
+
+def kunci_percobaan_login(username):
+    alamat = request.remote_addr or "-"
+    return (alamat, username.strip().lower())
+
+
+def boleh_coba_login(kunci, sekarang=None):
+    sekarang = time.monotonic() if sekarang is None else sekarang
+    riwayat = [
+        waktu
+        for waktu in _percobaan_login.get(kunci, [])
+        if sekarang - waktu < JEDA_PERCOBAAN_LOGIN
+    ]
+    _percobaan_login[kunci] = riwayat
+    return len(riwayat) < BATAS_PERCOBAAN_LOGIN
+
+
+def catat_gagal_login(kunci, sekarang=None):
+    sekarang = time.monotonic() if sekarang is None else sekarang
+    _percobaan_login.setdefault(kunci, []).append(sekarang)
+
+
+def bersihkan_percobaan_login(kunci):
+    _percobaan_login.pop(kunci, None)
+
 
 def login_required(f):
     @wraps(f)
@@ -438,13 +469,21 @@ def healthz():
 
 @app.route("/", methods=["GET", "POST"])
 def login():
-    conn = get_db_connection()
-
     pesan = None
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
+        kunci = kunci_percobaan_login(username)
+
+        if not boleh_coba_login(kunci):
+            flash(
+                "Terlalu banyak percobaan login. Coba lagi dalam 15 menit.",
+                "error",
+            )
+            return render_template("auth/login.html", pesan=pesan), 429
+
+        conn = get_db_connection()
 
         guru = conn.execute("""
             SELECT *
@@ -453,6 +492,7 @@ def login():
         """, (username,)).fetchone()
 
         if guru and check_password_hash(guru["password"], password):
+            bersihkan_percobaan_login(kunci)
             session.clear()
             session["id_guru"] = guru["id_guru"]
             session["nama_guru"] = guru["nama_lengkap"]
@@ -462,9 +502,9 @@ def login():
                 url_for("dashboard")
             )
 
+        conn.close()
+        catat_gagal_login(kunci)
         flash("Data login tidak sesuai. Silahkan periksa kembali.", "error")
-
-    conn.close()
 
     return render_template("auth/login.html", pesan=pesan)
 
@@ -483,8 +523,8 @@ def register():
 
         if not nama or not username or not password:
             flash("Semua data wajib diisi.", "error")
-        elif len(password) < 6:
-            flash("Kata sandi harus terdiri dari minimal 6 karakter.", "error")
+        elif len(password) < 8:
+            flash("Kata sandi harus terdiri dari minimal 8 karakter.", "error")
         elif password != konfirmasi:
             flash("Konfirmasi password tidak sama.", "error")
 
@@ -617,8 +657,8 @@ def keamanan_akun():
         ):
             pesan = "Password lama tidak sesuai."
 
-        elif len(password_baru) < 6:
-            pesan = "Password baru minimal 6 karakter."
+        elif len(password_baru) < 8:
+            pesan = "Password baru minimal 8 karakter."
 
         elif password_baru != konfirmasi:
             pesan = "Konfirmasi password tidak sama."
