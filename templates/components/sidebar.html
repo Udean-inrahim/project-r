@@ -186,6 +186,12 @@
             document.body.classList.add('sidebar-mobile-open');
             if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
             if (closeBtn) setTimeout(function() { closeBtn.focus(); }, 50);
+            // Trap focus: subsequent tab cycles within drawer
+            const sidebar = document.getElementById('appSidebar');
+            if (sidebar) {
+                sidebar.setAttribute('tabindex', '-1');
+                sidebar.addEventListener('keydown', trapFocus);
+            }
         }
 
         function tutupDrawer() {
@@ -193,6 +199,29 @@
             if (menuBtn) {
                 menuBtn.setAttribute('aria-expanded', 'false');
                 menuBtn.focus();
+            }
+            const sidebar = document.getElementById('appSidebar');
+            if (sidebar) {
+                sidebar.removeAttribute('tabindex');
+                sidebar.removeEventListener('keydown', trapFocus);
+            }
+        }
+
+        function trapFocus(e) {
+            if (e.key === 'Tab') {
+                const focusable = document.querySelectorAll(
+                    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+                );
+                if (!focusable.length) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
             }
         }
 

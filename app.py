@@ -2671,6 +2671,18 @@ def pengaturan_bobot():
                 flash(
                     "Pengaturan bobot, grade, dan KKM berhasil disimpan."
                 )
+                try:
+                    catat_riwayat(
+                        conn,
+                        session.get("id_guru"),
+                        id_periode,
+                        None,
+                        "ubah_bobot_grade",
+                        "Bobot tugas, UTS, UAS, kehadiran, batas grade, dan KKM diubah.",
+                    )
+                    conn.commit()
+                except Exception:  # noqa: BLE001
+                    conn.rollback()
 
         except (ValueError, TypeError):
             flash("Pastikan semua kolom diisi dengan angka yang valid.")
@@ -3062,6 +3074,18 @@ def halaman_penilaian():
                     """, (metode, id_periode))
 
                     conn.commit()
+                    try:
+                        catat_riwayat(
+                            conn,
+                            session.get("id_guru"),
+                            id_periode,
+                            None,
+                            "ubah_metode_tugas",
+                            f"Metode tugas diubah menjadi {metode}.",
+                        )
+                        conn.commit()
+                    except Exception:  # noqa: BLE001
+                        conn.rollback()
                     flash("Metode pengisian berhasil disimpan.")
 
             # ------------------------------------------
@@ -3104,7 +3128,18 @@ def halaman_penilaian():
                                 )
                             else:
                                 flash(f"Jumlah tugas berhasil dikurangi menjadi {jumlah_baru}.")
-
+                                try:
+                                    catat_riwayat(
+                                        conn,
+                                        session.get("id_guru"),
+                                        id_periode,
+                                        None,
+                                        "kurang_jumlah_tugas",
+                                        f"Jumlah tugas diubah dari {jumlah_lama} menjadi {jumlah_baru}.",
+                                    )
+                                    conn.commit()
+                                except Exception:  # noqa: BLE001
+                                    conn.rollback()
                         else:
                             for nomor in range(
                                 jumlah_lama + 1,
@@ -3131,6 +3166,18 @@ def halaman_penilaian():
                             flash(
                                 f"Jumlah tugas berhasil diatur menjadi {jumlah_baru}."
                             )
+                            try:
+                                catat_riwayat(
+                                    conn,
+                                    session.get("id_guru"),
+                                    id_periode,
+                                    None,
+                                    "tambah_jumlah_tugas",
+                                    f"Jumlah tugas diubah dari {jumlah_lama} menjadi {jumlah_baru}.",
+                                )
+                                conn.commit()
+                            except Exception:  # noqa: BLE001
+                                conn.rollback()
 
                     except (ValueError, TypeError):
                         flash("Jumlah tugas harus berupa angka.")
@@ -3154,11 +3201,50 @@ def halaman_penilaian():
 
                 try:
                     daftar_siswa_form = conn.execute("""
-                        SELECT id_periode_siswa
-                        FROM periode_siswa
-                        WHERE id_periode = ?
-                          AND status_aktif = 1
+                        SELECT ps.id_periode_siswa, s.nama_siswa
+                        FROM periode_siswa ps
+                        JOIN siswa s ON s.id_siswa = ps.id_siswa
+                        WHERE ps.id_periode = ?
+                          AND ps.status_aktif = 1
                     """, (id_periode,)).fetchall()
+
+                    # Nilai lama untuk mencatat perubahan per siswa
+                    nilai_lama_tugas = {}
+                    for row in conn.execute("""
+                        SELECT nt.id_periode_siswa, nt.id_tugas, nt.nilai
+                        FROM nilai_tugas nt
+                        JOIN tugas t ON nt.id_tugas = t.id_tugas
+                        WHERE t.id_periode = ?
+                    """, (id_periode,)).fetchall():
+                        nilai_lama_tugas[
+                            (row["id_periode_siswa"], row["id_tugas"])
+                        ] = row["nilai"]
+
+                    nilai_lama_rata = {}
+                    for row in conn.execute("""
+                        SELECT ntr.id_periode_siswa, ntr.nilai
+                        FROM nilai_tugas_rata_rata ntr
+                        JOIN periode_siswa ps
+                            ON ntr.id_periode_siswa = ps.id_periode_siswa
+                        WHERE ps.id_periode = ?
+                    """, (id_periode,)).fetchall():
+                        nilai_lama_rata[row["id_periode_siswa"]] = row["nilai"]
+
+                    nilai_lama_komponen = {}
+                    for row in conn.execute("""
+                        SELECT nk.id_periode_siswa,
+                            nk.nilai_uts, nk.nilai_uas,
+                            nk.nilai_kehadiran
+                        FROM nilai_komponen nk
+                        JOIN periode_siswa ps
+                            ON nk.id_periode_siswa = ps.id_periode_siswa
+                        WHERE ps.id_periode = ?
+                    """, (id_periode,)).fetchall():
+                        nilai_lama_komponen[row["id_periode_siswa"]] = (
+                            row["nilai_uts"],
+                            row["nilai_uas"],
+                            row["nilai_kehadiran"],
+                        )
 
                     metode = pengaturan["metode_tugas"]
 
@@ -3174,12 +3260,22 @@ def halaman_penilaian():
                                 ORDER BY id_tugas
                             """, (id_periode,)).fetchall()
 
+                            perubahan_tugas = []
+
                             for tugas in daftar_tugas:
                                 id_tugas = tugas["id_tugas"]
 
                                 nilai = baca_nilai(
                                     f"tugas_{id_roster}_{id_tugas}"
                                 )
+
+                                lama = nilai_lama_tugas.get(
+                                    (id_roster, id_tugas)
+                                )
+                                if lama != nilai:
+                                    perubahan_tugas.append(
+                                        f"tugas_{id_tugas}: {lama if lama is not None else '-'} -> {nilai if nilai is not None else '-'}"
+                                    )
 
                                 conn.execute("""
                                     INSERT INTO nilai_tugas (
@@ -3207,6 +3303,13 @@ def halaman_penilaian():
                                 f"rata_rata_{id_roster}"
                             )
 
+                            lama = nilai_lama_rata.get(id_roster)
+                            perubahan_rata = []
+                            if lama != nilai_rata:
+                                perubahan_rata.append(
+                                    f"rata_rata: {lama if lama is not None else '-'} -> {nilai_rata if nilai_rata is not None else '-'}"
+                                )
+
                             conn.execute("""
                                 INSERT INTO nilai_tugas_rata_rata (
                                     id_periode_siswa,
@@ -3225,6 +3328,23 @@ def halaman_penilaian():
                         nilai_kehadiran = baca_nilai(
                             f"kehadiran_{id_roster}"
                         )
+
+                        lama_komp = nilai_lama_komponen.get(id_roster)
+                        perubahan_komp = []
+                        if lama_komp:
+                            uts_l, uas_l, k_h_l = lama_komp
+                            if uts_l != nilai_uts:
+                                perubahan_komp.append(
+                                    f"UTS: {uts_l if uts_l is not None else '-'} -> {nilai_uts if nilai_uts is not None else '-'}"
+                                )
+                            if uas_l != nilai_uas:
+                                perubahan_komp.append(
+                                    f"UAS: {uas_l if uas_l is not None else '-'} -> {nilai_uas if nilai_uas is not None else '-'}"
+                                )
+                            if k_h_l != nilai_kehadiran:
+                                perubahan_komp.append(
+                                    f"Kehadiran: {k_h_l if k_h_l is not None else '-'} -> {nilai_kehadiran if nilai_kehadiran is not None else '-'}"
+                                )
 
                         conn.execute("""
                             INSERT INTO nilai_komponen (
@@ -3249,6 +3369,18 @@ def halaman_penilaian():
 
                     conn.commit()
                     try:
+                        # LOG PER-SISWA JIKA ADA PERUBAHAN
+                        if perubahan_tugas or perubahan_rata or perubahan_komp:
+                            catat_riwayat(
+                                conn,
+                                session.get("id_guru"),
+                                id_periode,
+                                id_roster,
+                                "ubah_nilai_siswa",
+                                f"Perubahan nilai siswa {siswa['nama_siswa']} pada periode {id_periode}.",
+                                None,
+                                "; ".join(perubahan_tugas + perubahan_rata + perubahan_komp)
+                            )
                         catat_riwayat(
                             conn,
                             session.get("id_guru"),
