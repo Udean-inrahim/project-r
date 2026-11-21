@@ -319,7 +319,26 @@ def ambil_periode(id_periode):
     return data
 
 
-def ada_nilai_tersimpan(conn, kondisi, params):
+def catat_riwayat(
+    conn, id_guru, id_periode, id_periode_siswa, jenis, keterangan,
+    nilai_lama=None, nilai_baru=None,
+):
+    try:
+        conn.execute(
+            """
+            INSERT INTO riwayat_perubahan (
+                id_guru, id_periode, id_periode_siswa,
+                jenis_perubahan, keterangan, nilai_lama, nilai_baru
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                id_guru, id_periode, id_periode_siswa,
+                jenis, keterangan, nilai_lama, nilai_baru,
+            ),
+        )
+    except Exception:  # noqa: BLE001
+        pass
     """
     Memeriksa apakah ada nilai siswa pada periode yang cocok dengan kondisi.
 
@@ -3229,6 +3248,18 @@ def halaman_penilaian():
                         ))
 
                     conn.commit()
+                    try:
+                        catat_riwayat(
+                            conn,
+                            session.get("id_guru"),
+                            id_periode,
+                            None,
+                            "simpan_nilai",
+                            "Nilai siswa disimpan melalui halaman penilaian.",
+                        )
+                        conn.commit()
+                    except Exception:  # noqa: BLE001
+                        pass
                     flash("Nilai siswa berhasil disimpan.")
 
                 except (ValueError, TypeError):
@@ -3780,6 +3811,155 @@ def rekapitulasi_nilai():
             distribusi_rentang=distribusi_rentang
         )
 
+    finally:
+        conn.close()
+
+
+@app.route("/rekapitulasi/ekspor.csv")
+@login_required
+def ekspor_rekapitulasi_csv():
+    import csv
+    import io
+    from flask import Response
+
+    id_periode = session.get("id_periode")
+    periode = ambil_periode(id_periode)
+    if not periode:
+        periode = pastikan_periode_aktif()
+        if periode:
+            id_periode = periode["id_periode"]
+
+    if not periode:
+        flash("Pilih atau buat kelas dan periode akademik terlebih dahulu.")
+        return redirect(url_for("kelola_kelas"))
+
+    conn = get_db_connection()
+    try:
+        pengaturan = conn.execute(
+            "SELECT * FROM pengaturan_penilaian WHERE id_periode = ?",
+            (id_periode,),
+        ).fetchone()
+
+        if not pengaturan or pengaturan["bobot_sudah_diatur"] != 1 or pengaturan["grade_sudah_diatur"] != 1:
+            flash("Pengaturan penilaian belum lengkap.")
+            return redirect(url_for("rekapitulasi_nilai"))
+
+        daftar_siswa = conn.execute(
+            """
+            SELECT ps.id_periode_siswa, ps.no_absen, s.nama_siswa
+            FROM periode_siswa ps
+            JOIN siswa s ON ps.id_siswa = s.id_siswa
+            WHERE ps.id_periode = ? AND ps.status_aktif = 1
+            ORDER BY ps.no_absen ASC
+            """,
+            (id_periode,),
+        ).fetchall()
+
+        daftar_tugas = conn.execute(
+            "SELECT id_tugas FROM tugas WHERE id_periode = ? ORDER BY id_tugas ASC",
+            (id_periode,),
+        ).fetchall()
+
+        nilai_tugas = {}
+        for row in conn.execute(
+            """
+            SELECT nt.id_periode_siswa, nt.id_tugas, nt.nilai
+            FROM nilai_tugas nt
+            JOIN tugas t ON nt.id_tugas = t.id_tugas
+            WHERE t.id_periode = ?
+            """,
+            (id_periode,),
+        ).fetchall():
+            nilai_tugas[(row["id_periode_siswa"], row["id_tugas"])] = row["nilai"]
+
+        nilai_rata_rata = {}
+        for row in conn.execute(
+            """
+            SELECT ntr.id_periode_siswa, ntr.nilai
+            FROM nilai_tugas_rata_rata ntr
+            JOIN periode_siswa ps ON ntr.id_periode_siswa = ps.id_periode_siswa
+            WHERE ps.id_periode = ?
+            """,
+            (id_periode,),
+        ).fetchall():
+            nilai_rata_rata[row["id_periode_siswa"]] = row["nilai"]
+
+        nilai_komponen = {}
+        for row in conn.execute(
+            """
+            SELECT nk.id_periode_siswa, nk.nilai_uts, nk.nilai_uas, nk.nilai_kehadiran
+            FROM nilai_komponen nk
+            JOIN periode_siswa ps ON nk.id_periode_siswa = ps.id_periode_siswa
+            WHERE ps.id_periode = ?
+            """,
+            (id_periode,),
+        ).fetchall():
+            nilai_komponen[row["id_periode_siswa"]] = row
+
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["No Absen", "Nama Siswa", "Nilai Tugas", "UTS", "UAS", "Kehadiran", "Nilai Akhir", "Grade", "Status KKM"])
+
+        for siswa in daftar_siswa:
+            id_roster = siswa["id_periode_siswa"]
+            if pengaturan["metode_tugas"] == "satu_per_satu":
+                daftar_nilai_tugas = [nilai_tugas.get((id_roster, tugas["id_tugas"])) for tugas in daftar_tugas]
+                nilai_terisi = [n for n in daftar_nilai_tugas if n is not None]
+                nilai_tugas_akhir = round(sum(nilai_terisi) / len(nilai_terisi), 2) if nilai_terisi else None
+            else:
+                v = nilai_rata_rata.get(id_roster)
+                nilai_tugas_akhir = round(v, 2) if v is not None else None
+
+            komponen = nilai_komponen.get(id_roster)
+            nilai_uts = komponen["nilai_uts"] if komponen else None
+            nilai_uas = komponen["nilai_uas"] if komponen else None
+            nilai_kehadiran = komponen["nilai_kehadiran"] if komponen else None
+
+            if nilai_tugas_akhir is not None and nilai_uts is not None and nilai_uas is not None and nilai_kehadiran is not None:
+                nilai_akhir = round(
+                    (nilai_tugas_akhir * pengaturan["bobot_tugas"]
+                     + nilai_uts * pengaturan["bobot_uts"]
+                     + nilai_uas * pengaturan["bobot_uas"]
+                     + nilai_kehadiran * pengaturan["bobot_kehadiran"]) / 100,
+                    2,
+                )
+            else:
+                nilai_akhir = None
+
+            if nilai_akhir is None:
+                grade = "-"
+                status_kkm = "Belum lengkap"
+            else:
+                if nilai_akhir >= pengaturan["batas_a"]:
+                    grade = "A"
+                elif nilai_akhir >= pengaturan["batas_b"]:
+                    grade = "B"
+                elif nilai_akhir >= pengaturan["batas_c"]:
+                    grade = "C"
+                elif nilai_akhir >= pengaturan["batas_d"]:
+                    grade = "D"
+                else:
+                    grade = "E"
+                status_kkm = "Tuntas" if nilai_akhir >= pengaturan["kkm"] else "Belum Tuntas"
+
+            writer.writerow([
+                siswa["no_absen"],
+                siswa["nama_siswa"],
+                "" if nilai_tugas_akhir is None else nilai_tugas_akhir,
+                "" if nilai_uts is None else nilai_uts,
+                "" if nilai_uas is None else nilai_uas,
+                "" if nilai_kehadiran is None else nilai_kehadiran,
+                "" if nilai_akhir is None else nilai_akhir,
+                grade,
+                status_kkm,
+            ])
+
+        csv_data = "\ufeff" + output.getvalue()
+        return Response(
+            csv_data,
+            mimetype="text/csv",
+            headers={"Content-Disposition": "attachment; filename=rekapitulasi_nilai.csv"},
+        )
     finally:
         conn.close()
 

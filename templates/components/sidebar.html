@@ -178,15 +178,37 @@
 
 <script>
     (function() {
-        function closeDrawer() {
-            document.body.classList.remove('sidebar-mobile-open');
-        }
+        const menuBtn = document.getElementById('mobileMenuBtn');
         const closeBtn = document.getElementById('sidebarMobileClose');
         const backdrop = document.getElementById('sidebarBackdrop');
-        if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-        if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+        function bukaDrawer() {
+            document.body.classList.add('sidebar-mobile-open');
+            if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
+            if (closeBtn) setTimeout(function() { closeBtn.focus(); }, 50);
+        }
+
+        function tutupDrawer() {
+            document.body.classList.remove('sidebar-mobile-open');
+            if (menuBtn) {
+                menuBtn.setAttribute('aria-expanded', 'false');
+                menuBtn.focus();
+            }
+        }
+
+        if (menuBtn) {
+            menuBtn.addEventListener('click', function() {
+                if (document.body.classList.contains('sidebar-mobile-open')) {
+                    tutupDrawer();
+                } else {
+                    bukaDrawer();
+                }
+            });
+        }
+        if (closeBtn) closeBtn.addEventListener('click', tutupDrawer);
+        if (backdrop) backdrop.addEventListener('click', tutupDrawer);
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeDrawer();
+            if (e.key === 'Escape') tutupDrawer();
         });
     })();
 </script>
