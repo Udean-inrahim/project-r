@@ -19,6 +19,7 @@
     </header>
 
     <form method="POST" class="form-penugasan">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="form-group">
             <label for="nama_kelas">Nama Kelas</label>

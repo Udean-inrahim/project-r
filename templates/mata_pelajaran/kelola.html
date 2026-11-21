@@ -50,6 +50,7 @@
                             <form method="POST"
                                 action="{{ url_for('pulihkan_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
                                 onsubmit="return confirm('Pulihkan mata pelajaran ini?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                 <button type="submit" class="btn-tambah">
                                     Pulihkan
@@ -59,6 +60,7 @@
                             <form method="POST"
                                 action="{{ url_for('hapus_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}"
                                 onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini secara permanen beserta kelas, periode, dan nilai terkait?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                 <button type="submit" class="btn-batal">
                                     Hapus
@@ -76,9 +78,11 @@
                         <div class="aksi-mapel">
                             <a href="{{ url_for('edit_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}" class="teks-pilih">Ubah</a>
                             <form method="POST" action="{{ url_for('arsip_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}" onsubmit="return confirm('Arsipkan mata pelajaran ini?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn-batal">Arsipkan</button>
                             </form>
                             <form method="POST" action="{{ url_for('hapus_mata_pelajaran', id_mata_pelajaran=item.id_mata_pelajaran) }}" onsubmit="return confirm('Yakin ingin menghapus mata pelajaran ini secara permanen beserta kelas, periode, dan nilai terkait?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn-batal">Hapus</button>
                             </form>
                         </div>

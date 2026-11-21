@@ -221,6 +221,7 @@
         <div class="dialog-actions">
             <button type="button" class="btn-secondary" onclick="tutupKonfirmasiKeluar()">Batal</button>
             <form method="post" action="{{ url_for('logout') }}" class="form-keluar">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn-danger">Keluar</button>
             </form>
         </div>

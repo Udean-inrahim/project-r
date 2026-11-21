@@ -26,6 +26,7 @@
             <p>Ubah nama yang ditampilkan pada akun Anda.</p>
 
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="form-group">
                     <label for="nama_lengkap">Nama Lengkap Guru</label>

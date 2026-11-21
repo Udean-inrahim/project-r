@@ -64,6 +64,7 @@
     </section>
 
     <form class="form-pengaturan-bobot" method="POST" action="{{ url_for('pengaturan_bobot', sumber=sumber) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <section class="tambah-kelas bobot-panel">
             <h2>1. Pengaturan Bobot</h2>

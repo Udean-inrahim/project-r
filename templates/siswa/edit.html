@@ -32,6 +32,7 @@
 
         <form method="POST"
               action="{{ url_for('edit_siswa', id_siswa=siswa.id_siswa) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <label>Nama Siswa</label>
             <input type="text"
@@ -57,6 +58,7 @@
         <form method="POST"
               action="{{ url_for('arsipkan_siswa', id_siswa=siswa.id_siswa) }}"
               onsubmit="return confirm('Yakin ingin mengarsipkan siswa ini? Siswa akan dikeluarkan dari daftar aktif, tetapi riwayat nilainya tetap tersimpan.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <button type="submit" class="btn-batal">
                 Arsipkan Siswa

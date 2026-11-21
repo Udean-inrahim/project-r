@@ -83,6 +83,7 @@
             {% endwith %}
 
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <label for="nama_lengkap">Nama Lengkap</label>
                 <input

@@ -78,6 +78,7 @@
             </div>
 
             <form method="POST" class="form-metode">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="aksi" value="simpan_metode">
                 <select name="metode_tugas" class="select-metode" required>
                     <option value="satu_per_satu" {% if pengaturan.metode_tugas == 'satu_per_satu' %}selected{% endif %}>
@@ -114,6 +115,7 @@
             </div>
 
             <form method="POST" class="form-jumlah-tugas" id="formJumlahTugas">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="aksi" value="atur_jumlah_tugas">
 
                 <div class="counter-wrapper">
@@ -180,6 +182,7 @@
             </div>
 
             <form method="POST" id="formNilaiSiswa">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="aksi" value="simpan_nilai">
 
                 <div class="table-responsive">

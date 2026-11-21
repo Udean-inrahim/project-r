@@ -98,6 +98,7 @@
                               action="{{ url_for('arsip_kelas', id_kelas=kelas.id_kelas) }}"
                               onsubmit="return confirm('Arsipkan kelas ini? Data kelas tetap tersimpan.');"
                               style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-batal" style="padding: 6px 12px; font-size: 13px;">
                                 Arsip
                             </button>
@@ -107,6 +108,7 @@
                             action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
                             onsubmit="return confirm('PERINGATAN! Kelas {{ kelas.nama_kelas }} beserta seluruh periode akademik, data siswa dalam periode tersebut, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data yang dihapus tidak dapat dipulihkan. Apakah Anda yakin ingin melanjutkan?');"
                             style="margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn-batal" style="padding: 6px 12px; font-size: 13px;">
                                 Hapus
                             </button>
@@ -134,6 +136,7 @@
         <h2>Tambah Kelas</h2>
 
         <form method="POST" action="{{ url_for('tambah_kelas') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <input type="hidden"
                    name="id_mata_pelajaran"
@@ -180,6 +183,7 @@
 
                         <form method="POST"
                               action="{{ url_for('pulihkan_kelas', id_kelas=kelas.id_kelas) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                             <button type="submit" class="btn-tambah" style="padding: 7px 16px; font-size: 12.5px;">
                                 Pulihkan
@@ -190,6 +194,7 @@
                         <form method="POST"
                             action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
                             onsubmit="return confirm('PERINGATAN! Kelas ini beserta seluruh periode akademik, siswa, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                             <button type="submit" class="btn-batal" style="padding: 7px 16px; font-size: 12.5px;">
                                 Hapus

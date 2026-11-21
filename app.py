@@ -1,11 +1,12 @@
 import os
+import secrets
 from datetime import date
 from functools import wraps
 
 from flask import (
     Flask, render_template, request,
     redirect, url_for, session, flash,
-    jsonify
+    jsonify, abort
 )
 from werkzeug.security import (
     generate_password_hash, check_password_hash
@@ -31,6 +32,45 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("VERCEL") == "1",
 )
+
+
+def token_csrf():
+    token = session.get("_csrf_token")
+    if not token:
+        token = secrets.token_urlsafe(32)
+        session["_csrf_token"] = token
+    return token
+
+
+@app.context_processor
+def sisipkan_token_csrf():
+    return {"csrf_token": token_csrf}
+
+
+@app.before_request
+def periksa_token_csrf():
+    if request.method not in ("POST", "PUT", "PATCH", "DELETE"):
+        return None
+
+    dikirim = (
+        request.form.get("csrf_token")
+        or request.headers.get("X-CSRF-Token", "")
+    )
+    tersimpan = session.get("_csrf_token", "")
+
+    if (
+        not tersimpan
+        or not dikirim
+        or not secrets.compare_digest(tersimpan, dikirim)
+    ):
+        abort(
+            400,
+            description=(
+                "Token CSRF tidak valid. Muat ulang halaman lalu coba lagi."
+            ),
+        )
+
+    return None
 
 # Jangan biarkan kegagalan database saat import mematikan seluruh aplikasi.
 # Kesalahannya disimpan supaya bisa diperiksa lewat /healthz.

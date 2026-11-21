@@ -26,6 +26,7 @@
             <p style="margin-bottom: 20px; color: #64748b; font-size: 13px;">Pastikan kata sandi baru Anda kuat dan mudah diingat.</p>
 
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="form-group">
                     <label for="username">Nama Pengguna (Username)</label>

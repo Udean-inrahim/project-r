@@ -68,6 +68,7 @@
                             <form method="POST"
                                 action="{{ url_for('aktifkan_periode', id_periode=periode.id_periode) }}"
                                 onsubmit="return confirm('Aktifkan kembali periode ini? Periode yang sedang aktif akan dikunci.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                 <button type="submit" class="btn-tambah">
                                     Aktifkan
@@ -78,6 +79,7 @@
                             <form method="POST"
                                 action="{{ url_for('hapus_periode', id_periode=periode.id_periode) }}"
                                 onsubmit="return confirm('PERINGATAN! Periode ini beserta daftar siswa, tugas, nilai, pengaturan, dan riwayat akademiknya akan dihapus permanen. Data tidak dapat dipulihkan. Yakin ingin menghapus?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                                 <button type="submit" class="btn-batal">
                                     Hapus
@@ -113,6 +115,7 @@
         </p>
 
         <form method="POST" action="{{ url_for('tambah_periode') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <input type="hidden"
                    name="id_kelas"
