@@ -14,7 +14,8 @@ from werkzeug.security import (
 )
 
 from database import (
-    IntegrityError, buat_tabel, get_db_connection as buka_koneksi_baru
+    IntegrityError, buat_tabel, get_db_connection as buka_koneksi_baru,
+    ada_nilai_tersimpan
 )
 
 

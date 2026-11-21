@@ -416,6 +416,38 @@ ON riwayat_perubahan(id_periode);
 """
 
 
+def ada_nilai_tersimpan(conn, kondisi, params=()):
+    """Cek apakah ada nilai tersimpan untuk kondisi periode/siswa tertentu.
+
+    Parameters
+    ----------
+    conn : Koneksi
+        Active database connection wrapper.
+    kondisi : str
+        SQL WHERE condition (without WHERE keyword) referencing
+        ``p.<kolom>`` (periode_akademik) or ``ps.<kolom>`` (periode_siswa).
+    params : tuple
+        Parameters for the condition placeholders.
+
+    Returns
+    -------
+    bool
+        True jika ada nilai tersimpan (penghapusan harus diblokir).
+    """
+    for tabel in ("nilai_tugas", "nilai_tugas_rata_rata", "nilai_komponen"):
+        query = f"""
+            SELECT 1
+            FROM {tabel} nt
+            JOIN periode_siswa ps ON nt.id_periode_siswa = ps.id_periode_siswa
+            JOIN periode_akademik p ON ps.id_periode = p.id_periode
+            WHERE {kondisi}
+            LIMIT 1
+        """
+        if conn.execute(query, params).fetchone() is not None:
+            return True
+    return False
+
+
 def buat_tabel():
     conn = get_db_connection()
 
