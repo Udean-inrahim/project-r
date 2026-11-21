@@ -414,16 +414,6 @@ def pastikan_periode_aktif():
 # PEMERIKSAAN KESEHATAN APLIKASI
 # ==================================================
 
-def samarkan(teks):
-    """Menyembunyikan kredensial dari pesan kesalahan."""
-    teks = str(teks)
-    if "@" in teks and "://" in teks:
-        awal = teks.index("://") + 3
-        akhir = teks.index("@")
-        teks = teks[:awal] + "***" + teks[akhir:]
-    return teks[:300]
-
-
 @app.route("/healthz")
 def healthz():
     from database import GALAT_PSYCOPG, ambil_database_url
@@ -440,27 +430,107 @@ def healthz():
         "skema_awal": "ok" if galat_db_awal is None else "gagal",
     }
 
-    if GALAT_PSYCOPG is not None:
-        hasil["galat_psycopg"] = samarkan(GALAT_PSYCOPG)
-
-    if galat_db_awal is not None:
-        hasil["galat_skema_awal"] = samarkan(galat_db_awal)
-
     try:
         conn = get_db_connection()
-        jumlah = conn.execute(
-            "SELECT COUNT(*) AS jumlah FROM guru"
-        ).fetchone()["jumlah"]
+        conn.execute("SELECT 1").fetchone()
         conn.close()
         hasil["database"] = "ok"
-        hasil["jumlah_guru"] = jumlah
         kode = 200
-    except Exception as kesalahan:  # noqa: BLE001
+    except Exception:  # noqa: BLE001
         hasil["database"] = "gagal"
-        hasil["galat_database"] = samarkan(kesalahan)
         kode = 500
 
     return jsonify(hasil), kode
+
+
+@app.after_request
+def pasang_header_keamanan(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault(
+        "Referrer-Policy", "strict-origin-when-cross-origin"
+    )
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "geolocation=(), microphone=(), camera=()",
+    )
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "img-src 'self' data:; "
+        "style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "font-src 'self' data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'",
+    )
+    return response
+
+
+def respons_kesalahan(kode, judul, pesan):
+    html = f"""<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{kode} - GRADE MASTER</title>
+    <style>
+        body {{ margin: 0; min-height: 100vh; display: grid; place-items: center;
+                font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+                background: #f6f8fb; color: #22303f; padding: 24px; }}
+        main {{ max-width: 460px; text-align: center; }}
+        .kode {{ font-size: 64px; font-weight: 800; color: #1765b1; margin: 0; }}
+        h1 {{ font-size: 20px; margin: 8px 0 12px; }}
+        p {{ color: #4a5a6a; line-height: 1.6; margin: 0 0 20px; }}
+        a {{ display: inline-block; padding: 10px 18px; border-radius: 8px;
+             background: #1765b1; color: #fff; text-decoration: none;
+             font-weight: 600; font-size: 14px; }}
+    </style>
+</head>
+<body>
+    <main>
+        <p class="kode">{kode}</p>
+        <h1>{judul}</h1>
+        <p>{pesan}</p>
+        <a href="/">Kembali ke Beranda</a>
+    </main>
+</body>
+</html>
+"""
+    return html, kode
+
+
+@app.errorhandler(400)
+def kesalahan_400(kesalahan):
+    return respons_kesalahan(
+        400,
+        "Permintaan tidak valid",
+        getattr(
+            kesalahan,
+            "description",
+            "Permintaan tidak dapat diproses.",
+        ),
+    )
+
+
+@app.errorhandler(404)
+def kesalahan_404(_):
+    return respons_kesalahan(
+        404,
+        "Halaman tidak ditemukan",
+        "Halaman yang Anda cari tidak tersedia.",
+    )
+
+
+@app.errorhandler(500)
+def kesalahan_500(_):
+    return respons_kesalahan(
+        500,
+        "Terjadi kesalahan",
+        "Permintaan gagal diproses. Silakan coba lagi beberapa saat lagi.",
+    )
 
 
 # ==================================================
