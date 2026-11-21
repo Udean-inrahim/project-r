@@ -16,9 +16,20 @@
             <p>Kelola kelas pada mata pelajaran {{ mata_pelajaran_aktif.nama_mata_pelajaran }}.</p>
         </div>
 
-        <a href="{{ url_for('dashboard') }}" class="btn-batal">
-            Kembali
-        </a>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <a href="{{ url_for('daftar_siswa') }}" class="btn-tambah" style="padding: 8px 14px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Buka Data Siswa
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn-batal">
+                Kembali
+            </a>
+        </div>
     </header>
 
     {% with pesan = get_flashed_messages(with_categories=true) %}
@@ -41,57 +52,64 @@
 
                 <article class="kartu-penugasan">
 
-                    <h3>{{ kelas.nama_kelas }}</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
+                        <div>
+                            <h3 style="margin: 0 0 6px 0; font-size: 18px; color: #1e293b;">{{ kelas.nama_kelas }}</h3>
+                            <p style="margin: 0; color: #64748b; font-size: 13px;">
+                                Jumlah periode: <strong>{{ kelas.jumlah_periode }}</strong> &bull; Jumlah siswa: <strong>{{ kelas.jumlah_siswa or 0 }}</strong>
+                            </p>
+                        </div>
+                        <div>
+                            {% if kelas.id_kelas == id_kelas_aktif %}
+                                <span class="status-kelas aktif" style="display: inline-block;">Kelas Aktif</span>
+                            {% else %}
+                                <span class="status-kelas tidak-aktif" style="display: inline-block;">Tidak Aktif</span>
+                            {% endif %}
+                        </div>
+                    </div>
 
-                    <p>
-                        Jumlah periode:
-                        <strong>{{ kelas.jumlah_periode }}</strong>
-                    </p>
+                    <div class="aksi-kartu" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px;">
 
-                    <div class="aksi-kartu">
+                        <a href="{{ url_for('daftar_siswa') if kelas.id_kelas == id_kelas_aktif else url_for('pilih_kelas', id_kelas=kelas.id_kelas, tujuan='siswa') }}"
+                           class="btn-tambah"
+                           style="padding: 7px 14px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Kelola Siswa
+                        </a>
 
-                        {% if kelas.id_kelas == id_kelas_aktif %}
-
-                            <span class="status-kelas aktif">
-                                Aktif
-                            </span>
-
-                        {% else %}
-
-                            <span class="status-kelas tidak-aktif">
-                                Tidak Aktif
-                            </span>
-
+                        {% if kelas.id_kelas != id_kelas_aktif %}
                             <a href="{{ url_for('pilih_kelas', id_kelas=kelas.id_kelas) }}"
-                            class="teks-pilih">
+                               class="teks-pilih" style="font-size: 13px;">
                                 Jadikan Aktif
                             </a>
-
                         {% endif %}
 
                         <a href="{{ url_for('edit_kelas', id_kelas=kelas.id_kelas) }}"
-                        class="teks-pilih">
+                           class="teks-pilih" style="font-size: 13px;">
                             Ubah Kelas
                         </a>
 
                         <form method="POST"
                               action="{{ url_for('arsip_kelas', id_kelas=kelas.id_kelas) }}"
-                              onsubmit="return confirm('Arsipkan kelas ini? Data kelas tetap tersimpan.');">
-
-                            <button type="submit" class="btn-batal">
+                              onsubmit="return confirm('Arsipkan kelas ini? Data kelas tetap tersimpan.');"
+                              style="margin: 0;">
+                            <button type="submit" class="btn-batal" style="padding: 6px 12px; font-size: 13px;">
                                 Arsip
                             </button>
-
                         </form>
 
                         <form method="POST"
                             action="{{ url_for('hapus_kelas', id_kelas=kelas.id_kelas) }}"
-                            onsubmit="return confirm('PERINGATAN! Kelas {{ kelas.nama_kelas }} beserta seluruh periode akademik, data siswa dalam periode tersebut, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data yang dihapus tidak dapat dipulihkan. Apakah Anda yakin ingin melanjutkan?');">
-
-                            <button type="submit" class="btn-batal">
+                            onsubmit="return confirm('PERINGATAN! Kelas {{ kelas.nama_kelas }} beserta seluruh periode akademik, data siswa dalam periode tersebut, tugas, nilai, dan riwayat akademiknya akan dihapus permanen. Data yang dihapus tidak dapat dipulihkan. Apakah Anda yakin ingin melanjutkan?');"
+                            style="margin: 0;">
+                            <button type="submit" class="btn-batal" style="padding: 6px 12px; font-size: 13px;">
                                 Hapus
                             </button>
-
                         </form>
 
                     </div>

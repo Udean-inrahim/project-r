@@ -32,6 +32,32 @@
         {% endif %}
     {% endwith %}
 
+    {% if belum_ada_periode %}
+    <section class="daftar-penugasan">
+        <div class="kosong" style="padding: 40px 20px; text-align: center;">
+            <h2 style="color: #1e293b; font-size: 18px; margin-bottom: 8px;">Belum Ada Periode Akademik Aktif</h2>
+            <p style="margin: 0 auto 24px; color: #64748b; font-size: 13.5px; max-width: 500px; line-height: 1.6;">
+                Pengaturan bobot dan KKM memerlukan periode akademik aktif pada kelas Anda. Silakan pilih mata pelajaran yang memiliki kelas, atau buat kelas baru terlebih dahulu.
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ url_for('daftar_mata_pelajaran') }}" class="btn-batal">
+                    Pilih Mata Pelajaran Lain
+                </a>
+                <a href="{{ url_for('kelola_kelas') }}" class="btn-tambah">
+                    + Kelola Kelas &amp; Periode
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {% else %}
+
+    {% if periode.status_terkunci == 1 %}
+    <div style="margin-bottom: 18px; padding: 12px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; color: #1e40af; font-size: 13.5px;">
+        🔒 <strong>Periode ini telah dikunci.</strong> Pengaturan bobot, batas grade, dan KKM berada dalam mode baca saja (read-only).
+    </div>
+    {% endif %}
+
     <section class="daftar-penugasan periode-bobot-panel">
         <h2>Periode Akademik</h2>
         <p>{{ periode.tahun_ajaran }} - {{ periode.semester }}</p>
@@ -45,16 +71,16 @@
 
             <div class="bobot-field-grid">
                 <label class="bobot-field">Bobot Tugas (%)
-                    <input type="number" name="bobot_tugas" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_tugas if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 30" required>
+                    <input type="number" name="bobot_tugas" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_tugas if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 30" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Bobot UTS (%)
-                    <input type="number" name="bobot_uts" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_uts if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 25" required>
+                    <input type="number" name="bobot_uts" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_uts if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 25" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Bobot UAS (%)
-                    <input type="number" name="bobot_uas" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_uas if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 30" required>
+                    <input type="number" name="bobot_uas" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_uas if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 30" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Bobot Kehadiran (%)
-                    <input type="number" name="bobot_kehadiran" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_kehadiran if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 15" required>
+                    <input type="number" name="bobot_kehadiran" min="0" max="100" step="0.01" value="{{ pengaturan.bobot_kehadiran if pengaturan.bobot_sudah_diatur else '' }}" placeholder="Contoh: 15" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
             </div>
         </section>
@@ -65,16 +91,16 @@
 
             <div class="predikat-field-grid">
                 <label class="bobot-field">Batas Predikat A
-                    <input type="number" name="batas_a" min="0" max="100" step="0.01" value="{{ pengaturan.batas_a if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 85" required>
+                    <input type="number" name="batas_a" min="0" max="100" step="0.01" value="{{ pengaturan.batas_a if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 85" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Batas Predikat B
-                    <input type="number" name="batas_b" min="0" max="100" step="0.01" value="{{ pengaturan.batas_b if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 75" required>
+                    <input type="number" name="batas_b" min="0" max="100" step="0.01" value="{{ pengaturan.batas_b if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 75" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Batas Predikat C
-                    <input type="number" name="batas_c" min="0" max="100" step="0.01" value="{{ pengaturan.batas_c if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 65" required>
+                    <input type="number" name="batas_c" min="0" max="100" step="0.01" value="{{ pengaturan.batas_c if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 65" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Batas Predikat D
-                    <input type="number" name="batas_d" min="0" max="100" step="0.01" value="{{ pengaturan.batas_d if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 50" required>
+                    <input type="number" name="batas_d" min="0" max="100" step="0.01" value="{{ pengaturan.batas_d if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 50" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
                 </label>
                 <label class="bobot-field">Batas Predikat E
                     <input type="number" value="0" disabled aria-describedby="batas-e-bantuan">
@@ -88,15 +114,17 @@
             <p>Nilai minimal yang harus dicapai siswa agar dinyatakan tuntas.</p>
 
             <label class="bobot-field kkm-field">Nilai KKM
-                <input type="number" name="kkm" min="0" max="100" step="0.01" value="{{ pengaturan.kkm if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 75" required>
+                <input type="number" name="kkm" min="0" max="100" step="0.01" value="{{ pengaturan.kkm if pengaturan.grade_sudah_diatur else '' }}" placeholder="Contoh: 75" required {% if periode.status_terkunci == 1 %}disabled{% endif %}>
             </label>
         </section>
 
-        <button type="submit" class="btn-tambah simpan-bobot-btn">
+        <button type="submit" class="btn-tambah simpan-bobot-btn" {% if periode.status_terkunci == 1 %}disabled style="opacity: 0.6; cursor: not-allowed;"{% endif %}>
             Simpan Semua Pengaturan
         </button>
 
     </form>
+
+    {% endif %}
 
 </div>
 

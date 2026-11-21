@@ -9,6 +9,7 @@
     <!-- Modern App Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pengaturan_tugas.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/penugasan.css') }}">
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
 
@@ -68,7 +69,7 @@
 
             <!-- Page Footer -->
             <footer class="page-footer">
-                &copy; 2025 Grade Master. All rights reserved.
+                &copy; 2026 Grade Master. All rights reserved.
             </footer>
         </main>
     </div>
@@ -85,5 +86,6 @@
             }, 4000);
         }
     </script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

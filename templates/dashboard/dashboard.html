@@ -125,8 +125,7 @@
                         <p>Belum ada periode akademik untuk kelas ini.</p>
                         <a href="{{ url_for('kelola_periode', id_kelas=kelas_aktif.id_kelas) }}">Kelola Periode</a>
                     {% else %}
-                        <p>Pilih atau tambahkan kelas untuk mengelola periode akademik.</p>
-                        <a href="{{ url_for('kelola_kelas') }}">Kelola Kelas</a>
+                        <p>Pilih atau tambahkan kelas terlebih dahulu melalui menu <strong>Kelola Kelas</strong> di atas.</p>
                     {% endif %}
                 </div>
             {% endif %}
