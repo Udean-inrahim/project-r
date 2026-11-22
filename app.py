@@ -340,34 +340,6 @@ def catat_riwayat(
         )
     except Exception:  # noqa: BLE001
         pass
-    """
-    Memeriksa apakah ada nilai siswa pada periode yang cocok dengan kondisi.
-
-    Dipakai sebelum penghapusan permanen supaya nilai tidak ikut terhapus
-    diam-diam lewat ON DELETE CASCADE.
-    """
-    baris = conn.execute(f"""
-        SELECT 1
-        FROM periode_akademik p
-        JOIN periode_siswa ps
-            ON ps.id_periode = p.id_periode
-        LEFT JOIN nilai_tugas nt
-            ON nt.id_periode_siswa = ps.id_periode_siswa
-        LEFT JOIN nilai_tugas_rata_rata ntr
-            ON ntr.id_periode_siswa = ps.id_periode_siswa
-        LEFT JOIN nilai_komponen nk
-            ON nk.id_periode_siswa = ps.id_periode_siswa
-        WHERE {kondisi}
-          AND (
-              nt.nilai IS NOT NULL
-              OR ntr.nilai IS NOT NULL
-              OR nk.nilai_uts IS NOT NULL
-              OR nk.nilai_uas IS NOT NULL
-              OR nk.nilai_kehadiran IS NOT NULL
-          )
-        LIMIT 1
-    """, params).fetchone()
-    return baris is not None
 
 
 def pastikan_periode_aktif():

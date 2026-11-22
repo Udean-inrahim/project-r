@@ -434,18 +434,27 @@ def ada_nilai_tersimpan(conn, kondisi, params=()):
     bool
         True jika ada nilai tersimpan (penghapusan harus diblokir).
     """
-    for tabel in ("nilai_tugas", "nilai_tugas_rata_rata", "nilai_komponen"):
-        query = f"""
+    query = f"""
             SELECT 1
-            FROM {tabel} nt
-            JOIN periode_siswa ps ON nt.id_periode_siswa = ps.id_periode_siswa
-            JOIN periode_akademik p ON ps.id_periode = p.id_periode
+            FROM periode_akademik p
+            JOIN periode_siswa ps ON ps.id_periode = p.id_periode
+            LEFT JOIN nilai_tugas nt
+                ON nt.id_periode_siswa = ps.id_periode_siswa
+            LEFT JOIN nilai_tugas_rata_rata ntr
+                ON ntr.id_periode_siswa = ps.id_periode_siswa
+            LEFT JOIN nilai_komponen nk
+                ON nk.id_periode_siswa = ps.id_periode_siswa
             WHERE {kondisi}
+              AND (
+                  nt.nilai IS NOT NULL
+                  OR ntr.nilai IS NOT NULL
+                  OR nk.nilai_uts IS NOT NULL
+                  OR nk.nilai_uas IS NOT NULL
+                  OR nk.nilai_kehadiran IS NOT NULL
+              )
             LIMIT 1
         """
-        if conn.execute(query, params).fetchone() is not None:
-            return True
-    return False
+    return conn.execute(query, params).fetchone() is not None
 
 
 def buat_tabel():
