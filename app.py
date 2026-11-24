@@ -3229,6 +3229,7 @@ def halaman_penilaian():
                         )
 
                     metode = pengaturan["metode_tugas"]
+                    nilai_tugas_baru = []
 
                     for siswa in daftar_siswa_form:
                         id_roster = siswa["id_periode_siswa"]
@@ -3253,21 +3254,7 @@ def halaman_penilaian():
                                         f"tugas_{id_tugas}: {lama if lama is not None else '-'} -> {nilai if nilai is not None else '-'}"
                                     )
 
-                                conn.execute("""
-                                    INSERT INTO nilai_tugas (
-                                        id_tugas,
-                                        id_periode_siswa,
-                                        nilai
-                                    )
-                                    VALUES (?, ?, ?)
-                                    ON CONFLICT (
-                                        id_tugas,
-                                        id_periode_siswa
-                                    )
-                                    DO UPDATE SET
-                                        nilai = excluded.nilai,
-                                        diperbarui_pada = CURRENT_TIMESTAMP
-                                """, (
+                                nilai_tugas_baru.append((
                                     id_tugas,
                                     id_roster,
                                     nilai
@@ -3353,6 +3340,23 @@ def halaman_penilaian():
                                 None,
                                 "; ".join(perubahan_tugas + perubahan_rata + perubahan_komp)
                             )
+
+                    if nilai_tugas_baru:
+                        conn.executemany("""
+                            INSERT INTO nilai_tugas (
+                                id_tugas,
+                                id_periode_siswa,
+                                nilai
+                            )
+                            VALUES (?, ?, ?)
+                            ON CONFLICT (
+                                id_tugas,
+                                id_periode_siswa
+                            )
+                            DO UPDATE SET
+                                nilai = excluded.nilai,
+                                diperbarui_pada = CURRENT_TIMESTAMP
+                        """, nilai_tugas_baru)
 
                     conn.commit()
                     try:

@@ -129,6 +129,11 @@ class Koneksi:
     def execute(self, sql, params=()):
         return self._koneksi.execute(terjemahkan(sql), params or None)
 
+    def executemany(self, sql, params_seq):
+        return self._koneksi.cursor().executemany(
+            terjemahkan(sql), params_seq
+        )
+
     def commit(self):
         self._koneksi.commit()
 

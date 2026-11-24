@@ -1,6 +1,7 @@
 import unittest
+from unittest.mock import patch
 
-from app import app
+from app import app, halaman_penilaian
 
 
 class RekapitulasiHadirTest(unittest.TestCase):
@@ -49,6 +50,86 @@ class RekapitulasiHadirTest(unittest.TestCase):
 
         self.assertIn("<th style=\"text-align: center;\">Kehadiran</th>", html)
         self.assertIn("83,00", html)
+
+
+class SimpanNilaiBatchTest(unittest.TestCase):
+    def test_upsert_nilai_satu_per_satu_dijalankan_dalam_batch(self):
+        class Hasil:
+            def __init__(self, baris=()):
+                self.baris = baris
+
+            def fetchall(self):
+                return self.baris
+
+            def fetchone(self):
+                return self.baris[0] if self.baris else None
+
+        class KoneksiUji:
+            def __init__(self):
+                self.batch = []
+                self.jumlah_upsert_individual = 0
+
+            def execute(self, sql, params=()):
+                if "FROM pengaturan_penilaian" in sql:
+                    return Hasil([{"bobot_sudah_diatur": 1, "grade_sudah_diatur": 1,
+                                   "metode_tugas": "satu_per_satu"}])
+                if "FROM periode_siswa ps" in sql and "JOIN siswa s" in sql:
+                    return Hasil([
+                        {"id_periode_siswa": 10, "nama_siswa": "Satu"},
+                        {"id_periode_siswa": 11, "nama_siswa": "Dua"},
+                    ])
+                if "FROM tugas" in sql and "SELECT id_tugas" in sql:
+                    return Hasil([{"id_tugas": 21}, {"id_tugas": 22}])
+                if "FROM nilai_tugas nt" in sql:
+                    return Hasil()
+                if "FROM nilai_tugas_rata_rata" in sql or "FROM nilai_komponen nk" in sql:
+                    return Hasil()
+                return Hasil()
+
+            def executemany(self, sql, rows):
+                self.batch.append((sql, list(rows)))
+                return Hasil()
+
+            def commit(self):
+                pass
+
+            def rollback(self):
+                pass
+
+            def close(self):
+                pass
+
+        koneksi = KoneksiUji()
+        periode = {"id_periode": 7, "status_terkunci": 0}
+
+        with app.test_request_context(
+            "/penilaian",
+            method="POST",
+            data={
+                "aksi": "simpan_nilai",
+                "csrf_token": "token-uji",
+                "tugas_10_21": "80", "tugas_10_22": "81",
+                "tugas_11_21": "82", "tugas_11_22": "83",
+                "uts_10": "", "uas_10": "", "kehadiran_10": "",
+                "uts_11": "", "uas_11": "", "kehadiran_11": "",
+            },
+        ):
+            with app.test_request_context():
+                from flask import session
+                session["id_guru"] = 1
+            with patch("app.session", {"id_guru": 1}), \
+                 patch("app.ambil_periode", return_value=periode), \
+                 patch("app.get_db_connection", return_value=koneksi), \
+                 patch("app.catat_riwayat"):
+                response = halaman_penilaian()
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(koneksi.jumlah_upsert_individual, 0)
+        self.assertEqual(len(koneksi.batch), 1)
+        self.assertEqual(koneksi.batch[0][1], [
+            (21, 10, 80.0), (22, 10, 81.0),
+            (21, 11, 82.0), (22, 11, 83.0),
+        ])
 
 
 if __name__ == "__main__":
