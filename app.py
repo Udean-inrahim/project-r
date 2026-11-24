@@ -3181,6 +3181,15 @@ def halaman_penilaian():
                           AND ps.status_aktif = 1
                     """, (id_periode,)).fetchall()
 
+                    daftar_tugas_simpan = []
+                    if pengaturan["metode_tugas"] == "satu_per_satu":
+                        daftar_tugas_simpan = conn.execute("""
+                            SELECT id_tugas
+                            FROM tugas
+                            WHERE id_periode = ?
+                            ORDER BY id_tugas
+                        """, (id_periode,)).fetchall()
+
                     # Nilai lama untuk mencatat perubahan per siswa
                     nilai_lama_tugas = {}
                     for row in conn.execute("""
@@ -3229,14 +3238,7 @@ def halaman_penilaian():
 
                         # Nilai tugas satu per satu
                         if metode == "satu_per_satu":
-                            daftar_tugas = conn.execute("""
-                                SELECT id_tugas
-                                FROM tugas
-                                WHERE id_periode = ?
-                                ORDER BY id_tugas
-                            """, (id_periode,)).fetchall()
-
-                            for tugas in daftar_tugas:
+                            for tugas in daftar_tugas_simpan:
                                 id_tugas = tugas["id_tugas"]
 
                                 nilai = baca_nilai(

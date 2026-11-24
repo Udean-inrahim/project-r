@@ -287,6 +287,7 @@
                         <th style="text-align: center;">Tugas</th>
                         <th style="text-align: center;">UTS</th>
                         <th style="text-align: center;">UAS</th>
+                        <th style="text-align: center;">Kehadiran</th>
                         <th style="text-align: center;">Nilai Akhir</th>
                         <th style="text-align: center;">Predikat</th>
                         <th style="text-align: center;">Status</th>
@@ -305,6 +306,9 @@
                         </td>
                         <td style="text-align: center;">
                             {% if s.nilai_uas is not none %}{{ "%.2f"|format(s.nilai_uas)|replace('.', ',') }}{% else %}-{% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if s.nilai_kehadiran is not none %}{{ "%.2f"|format(s.nilai_kehadiran)|replace('.', ',') }}{% else %}-{% endif %}
                         </td>
                         <td style="text-align: center; font-weight: 700; color: #0f172a;">
                             {% if s.nilai_akhir is not none %}{{ "%.2f"|format(s.nilai_akhir)|replace('.', ',') }}{% else %}-{% endif %}
@@ -395,7 +399,7 @@
     // -------------------------------------------------------------
     window.eksporDataCSV = function() {
         const rows = [];
-        rows.push(['No. Absen', 'Nama Siswa', 'Nilai Tugas', 'Nilai UTS', 'Nilai UAS', 'Nilai Akhir', 'Predikat', 'Status Ketuntasan']);
+        rows.push(['No. Absen', 'Nama Siswa', 'Nilai Tugas', 'Nilai UTS', 'Nilai UAS', 'Kehadiran', 'Nilai Akhir', 'Predikat', 'Status Ketuntasan']);
 
         {% for s in hasil_rekap %}
         rows.push([
@@ -404,6 +408,7 @@
             "{{ '%.2f'|format(s.nilai_tugas)|replace('.', ',') if s.nilai_tugas is not none else '-' }}",
             "{{ '%.2f'|format(s.nilai_uts)|replace('.', ',') if s.nilai_uts is not none else '-' }}",
             "{{ '%.2f'|format(s.nilai_uas)|replace('.', ',') if s.nilai_uas is not none else '-' }}",
+            "{{ '%.2f'|format(s.nilai_kehadiran)|replace('.', ',') if s.nilai_kehadiran is not none else '-' }}",
             "{{ '%.2f'|format(s.nilai_akhir)|replace('.', ',') if s.nilai_akhir is not none else '-' }}",
             "{{ s.grade or '-' }}",
             "{{ s.status_kkm or 'Belum Lengkap' }}"
